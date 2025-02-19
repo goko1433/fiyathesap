@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otomatik Fiyat Hesaplama</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        .left, .right {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .left {
+            background-color: #1c1c1c;
+            border-right: 1px solid #444;
+        }
+
+        .right {
+            background-color: #1a1a1a;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        label {
+            font-size: 18px;
+            color: #ddd;
+            margin-top: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 30px;
+            padding: 15px;
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+        }
+
+        .green {
+            color: #4CAF50;
+            font-size: 22px;
+            font-weight: normal;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <h2>Otomatik Fiyat Hesaplama</h2>
+            
+            <label for="kg">Toplam Kg:</label>
+            <input type="number" id="kg" placeholder="Kg girin">
+            
+            <label for="süre">Kesim Süresi (dk):</label>
+            <input type="number" id="süre" placeholder="Süre girin">
+            
+            <label for="kesim_türü">Kesim Türü:</label>
+            <select id="kesim_türü">
+                <option value="1.75">Paslanmaz Çelik</option>
+                <option value="1.5">Siyah Saç</option>
+                <option value="2.0">ALMG Kesim</option>
+            </select>
+            
+            <label for="fiber">5040 Fiber Seçeneği:</label>
+            <select id="fiber">
+                <option value="1">Yok</option>
+                <option value="3">3x</option>
+                <option value="4" selected>4x</option>
+                <option value="6">6x</option>
+            </select>
+            
+            <label for="yerlesim">Yerleşim Karmaşıklık Fiyat Artışı:</label>
+            <select id="yerlesim">
+                <option value="1">Yok</option>
+                <option value="1.1">%10</option>
+                <option value="1.2">%20</option>
+                <option value="1.3">%30</option>
+                <option value="1.4">%40</option>
+                <option value="1.5">%50</option>
+            </select>
+            
+            <label for="kdv">KDV (%):</label>
+            <input type="number" id="kdv" placeholder="KDV girin" value="20">
+
+            <button onclick="hesapla()">Hesapla</button>
+            <button onclick="temizle()">Temizle</button>
+            
+            <div class="result" id="sonuc"></div>
+        </div>
+        <div class="right">
+            <h2>Malzeme Fiyat Hesaplama</h2>
+            
+            <label for="malzeme_kg">Malzeme Kg:</label>
+            <input type="number" id="malzeme_kg" placeholder="Kg girin">
+            
+            <label for="malzeme_türü">Malzeme Türü:</label>
+            <select id="malzeme_türü">
+                <option value="1.20">Siyah</option>
+                <option value="4.00">Paslanmaz 304</option>
+                <option value="5.00">Paslanmaz 316</option>
+                <option value="6.00">Paslanmaz 309</option>
+                <option value="8.25">Paslanmaz 310</option>
+                <option value="5.50">Paslanmaz 321</option>
+                <option value="4.00">Paslanmaz 430</option>
+                <option value="6.50">Alüminyum (5083 kalite)</option>
+                <option value="6.00">Alüminyum (5083 kalite)</option>
+                <option value="4.50">Alüminyum (1050 kalite)</option>
+                <option value="5.50">Alüminyum (5754 kalite)</option>
+                <option value="4.25">Hardox</option>
+                <option value="1.25">Galvaniz</option>
+                <option value="14.50">Pirinç</option>
+                <option value="16.00">Bakır</option>
+            </select>
+            
+            <label for="malzeme_fiyat">Malzeme Fiyatı ($/kg):</label>
+            <input type="number" id="malzeme_fiyat" value="0">
+            
+            <button onclick="malzemeHesapla()">Malzeme Fiyatı Hesapla</button>
+            
+            <div class="result" id="malzeme_sonuc"></div>
+        </div>
+    </div>
+    
+    <script>
+        function hesapla() {
+            let kg = parseFloat(document.getElementById("kg").value) || 0;
+            let süre = parseFloat(document.getElementById("süre").value) || 0;
+            let kesimFaktörü = parseFloat(document.getElementById("kesim_türü").value);
+            let fiberÇarpan = parseFloat(document.getElementById("fiber").value);
+            let yerlesimÇarpan = parseFloat(document.getElementById("yerlesim").value);
+            let kdv = parseFloat(document.getElementById("kdv").value) / 100;
+            
+            let kgFiyat = kg * 0.30;
+            let süreFiyat = süre * kesimFaktörü * fiberÇarpan;
+            let toplamFiyat = (kgFiyat + süreFiyat) * yerlesimÇarpan;
+            let toplamFiyatKDVli = toplamFiyat * (1 + kdv);
+
+            let higherPriceText = '';
+            if (kgFiyat > süreFiyat) {
+                higherPriceText = `<span class="green">Bu iş için kg fiyatını seçelim</span>`;
+            } else {
+                higherPriceText = `<span class="green">Bu iş için süre fiyatını seçelim</span>`;
+            }
+
+            document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br> Süre Fiyatı: $${süreFiyat.toFixed(2)}<br> Toplam Fiyat: $${toplamFiyat.toFixed(2)}<br> KDV Dahil Toplam Fiyat: $${toplamFiyatKDVli.toFixed(2)}<br>${higherPriceText}`;
+        }
+
+        function malzemeHesapla() {
+            let malzemeKg = parseFloat(document.getElementById("malzeme_kg").value) || 0;
+            let malzemeFiyat = parseFloat(document.getElementById("malzeme_fiyat").value);
+            let malzemeTürü = parseFloat(document.getElementById("malzeme_türü").value);
+
+            if (malzemeFiyat === 0) {
+                malzemeFiyat = malzemeTürü;
+            }
+            
+            let toplamMalzemeFiyat = malzemeKg * malzemeFiyat;
+
+            document.getElementById("malzeme_sonuc").innerHTML = `Malzeme Fiyatı: $${toplamMalzemeFiyat.toFixed(2)}`;
+        }
+
+        function temizle() {
+            document.getElementById
