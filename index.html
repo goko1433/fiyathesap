@@ -130,9 +130,6 @@
                 <option value="1.5">%50</option>
             </select>
             
-            <label for="kdv">KDV (%):</label>
-            <input type="number" id="kdv" placeholder="KDV girin" value="20">
-
             <button onclick="hesapla()">Hesapla</button>
             <button onclick="temizle()">Temizle</button>
             
@@ -179,12 +176,10 @@
             let kesimFaktörü = parseFloat(document.getElementById("kesim_türü").value);
             let fiberÇarpan = parseFloat(document.getElementById("fiber").value);
             let yerlesimÇarpan = parseFloat(document.getElementById("yerlesim").value);
-            let kdv = parseFloat(document.getElementById("kdv").value) / 100;
             
             let kgFiyat = kg * 0.30;
             let süreFiyat = süre * kesimFaktörü * fiberÇarpan;
             let toplamFiyat = (kgFiyat + süreFiyat) * yerlesimÇarpan;
-            let toplamFiyatKDVli = toplamFiyat * (1 + kdv);
 
             let higherPriceText = '';
             if (kgFiyat > süreFiyat) {
@@ -193,7 +188,7 @@
                 higherPriceText = `<span class="green">Bu iş için süre fiyatını seçelim</span>`;
             }
 
-            document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br> Süre Fiyatı: $${süreFiyat.toFixed(2)}<br> Toplam Fiyat: $${toplamFiyat.toFixed(2)}<br> KDV Dahil Toplam Fiyat: $${toplamFiyatKDVli.toFixed(2)}<br>${higherPriceText}`;
+            document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br> Süre Fiyatı: $${süreFiyat.toFixed(2)}<br> Toplam Fiyat: $${toplamFiyat.toFixed(2)}<br>${higherPriceText}`;
         }
 
         function malzemeHesapla() {
@@ -211,4 +206,19 @@
         }
 
         function temizle() {
-            document.getElementById
+            document.getElementById("kg").value = "";
+            document.getElementById("süre").value = "";
+            document.getElementById("kesim_türü").value = "1.75";
+            document.getElementById("fiber").value = "4";
+            document.getElementById("yerlesim").value = "1";
+            document.getElementById("malzeme_kg").value = "";
+            document.getElementById("malzeme_fiyat").value = "";
+            document.getElementById("sonuc").innerHTML = "";
+            document.get
+                        document.getElementById("malzeme_fiyat").value = "";
+            document.getElementById("sonuc").innerHTML = "";
+            document.getElementById("malzeme_sonuc").innerHTML = "";
+        }
+    </script>
+</body>
+</html>
