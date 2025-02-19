@@ -91,6 +91,20 @@
             font-size: 22px;
             font-weight: normal;
             margin-top: 20px;
+            animation: blink 1s linear infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .comment {
+            color: #ffcc00;
+            font-size: 18px;
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
@@ -107,8 +121,8 @@
             
             <label for="kesim_türü">Kesim Türü:</label>
             <select id="kesim_türü">
-                <option value="1.75">Paslanmaz Çelik</option>
-                <option value="1.5">Siyah Saç</option>
+                <option value="2.0">Paslanmaz Çelik</option>
+                <option value="1.75">Siyah Saç</option>
                 <option value="2.0">ALMG Kesim</option>
             </select>
             
@@ -134,6 +148,8 @@
             <button onclick="temizle()">Temizle</button>
             
             <div class="result" id="sonuc"></div>
+            <div class="result" id="toplamFiyat"></div>
+            <div class="comment" id="yorum"></div>
         </div>
         <div class="right">
             <h2>Malzeme Fiyat Hesaplama</h2>
@@ -177,18 +193,23 @@
             let fiberÇarpan = parseFloat(document.getElementById("fiber").value);
             let yerlesimÇarpan = parseFloat(document.getElementById("yerlesim").value);
             
-            let kgFiyat = kg * 0.30;
+            // Kilogram fiyatı
+            let kgFiyat = kg * 0.36;
+
+            // Süre fiyatı
             let süreFiyat = süre * kesimFaktörü * fiberÇarpan;
-            let toplamFiyat = (kgFiyat + süreFiyat) * yerlesimÇarpan;
 
-            let higherPriceText = '';
-            if (kgFiyat > süreFiyat) {
-                higherPriceText = `<span class="green">Bu iş için kg fiyatını seçelim</span>`;
-            } else {
-                higherPriceText = `<span class="green">Bu iş için süre fiyatını seçelim</span>`;
-            }
+            // En yüksek fiyatı seçiyoruz
+            let toplamFiyat = (kgFiyat > süreFiyat ? kgFiyat : süreFiyat);
 
-            document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br> Süre Fiyatı: $${süreFiyat.toFixed(2)}<br> Toplam Fiyat: $${toplamFiyat.toFixed(2)}<br>${higherPriceText}`;
+            // Ortalama fiyat hesaplama %60 ile
+            let ortalamaFiyat = (kgFiyat * 0.60) + (süreFiyat * 0.40);
+            let yorumMetni = `Kg fiyatı: $${kgFiyat.toFixed(2)}, Süre fiyatı: $${süreFiyat.toFixed(2)}<br>Fiyat dengesini kurmak için hesaplanan ortalama: $${ortalamaFiyat.toFixed(2)}`;
+            document.getElementById("yorum").innerHTML = yorumMetni;
+
+            // Sonucu göster
+            document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br> Süre Fiyatı: $${süreFiyat.toFixed(2)}`;
+            document.getElementById("toplamFiyat").innerHTML = `<strong>En Yüksek Fiyat: $${toplamFiyat.toFixed(2)}</strong>`;
         }
 
         function malzemeHesapla() {
@@ -202,22 +223,29 @@
             
             let toplamMalzemeFiyat = malzemeKg * malzemeFiyat;
 
+            // Malzeme fiyatını hesapla ve yansıt
             document.getElementById("malzeme_sonuc").innerHTML = `Malzeme Fiyatı: $${toplamMalzemeFiyat.toFixed(2)}`;
+
+            // Toplam fiyatı alıp malzeme fiyatını ekle
+            let toplamFiyat = parseFloat(document.getElementById("toplamFiyat").innerText.replace('En Yüksek Fiyat: $', '')) || 0;
+            let toplamMalzemeDahilFiyat = toplamFiyat + toplamMalzemeFiyat;
+
+            // Malzeme dahil fiyatı yeşil renkte ve yanıp sönen şekilde göster
+            document.getElementById("toplamFiyat").innerHTML += `<br><strong class="green">Toplam Fiyat (Malzeme Dahil): $${toplamMalzemeDahilFiyat.toFixed(2)}</strong>`;
         }
 
         function temizle() {
             document.getElementById("kg").value = "";
             document.getElementById("süre").value = "";
-            document.getElementById("kesim_türü").value = "1.75";
+            document.getElementById("kesim_türü").value = "2.0";
             document.getElementById("fiber").value = "4";
             document.getElementById("yerlesim").value = "1";
             document.getElementById("malzeme_kg").value = "";
             document.getElementById("malzeme_fiyat").value = "";
             document.getElementById("sonuc").innerHTML = "";
-            document.get
-                        document.getElementById("malzeme_fiyat").value = "";
-            document.getElementById("sonuc").innerHTML = "";
+            document.getElementById("toplamFiyat").innerHTML = "";
             document.getElementById("malzeme_sonuc").innerHTML = "";
+            document.getElementById("yorum").innerHTML = "";
         }
     </script>
 </body>
