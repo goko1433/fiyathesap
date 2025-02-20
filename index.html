@@ -1,252 +1,618 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomatik Fiyat Hesaplama</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            display: flex;
-            width: 100%;
-            max-width: 1600px;
-        }
-
-        .left, .right {
-            flex: 1;
-            padding: 30px;
-        }
-
-        .left {
-            background-color: #1c1c1c;
-            border-right: 1px solid #444;
-        }
-
-        .right {
-            background-color: #1a1a1a;
-        }
-
-        h2 {
-            text-align: center;
-            font-size: 32px;
-            margin-bottom: 20px;
-            color: #fff;
-        }
-
-        label {
-            font-size: 18px;
-            color: #ddd;
-            margin-top: 15px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background-color: #333;
-            color: #fff;
-            font-size: 16px;
-        }
-
-        button {
-            margin-top: 30px;
-            padding: 15px;
-            width: 100%;
-            background-color: #007bff;
-            color: white;
-            font-size: 18px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .result {
-            margin-top: 30px;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            color: #fff;
-        }
-
-        .green {
-            color: #4CAF50;
-            font-size: 22px;
-            font-weight: normal;
-            margin-top: 20px;
-            animation: blink 1s linear infinite;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .comment {
-            color: #ffcc00;
-            font-size: 18px;
-            margin-top: 20px;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Otomatik Fiyat Hesaplama & Admin Panel</title>
+  <style>
+    /* Genel Stil */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
+    /* Üst Header */
+    .main-header {
+      background: #e1e8ed;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ccc;
+    }
+    .main-header button {
+      background: #4a90e2;
+      border: none;
+      padding: 10px 15px;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .main-header button:hover {
+      background: #407ec9;
+    }
+    /* Ana Konteyner */
+    .container {
+      display: flex;
+      max-width: 1600px;
+      margin: 20px auto;
+      padding: 20px;
+      gap: 20px;
+    }
+    .left, .right {
+      flex: 1;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    h2 {
+      font-size: 28px;
+      color: #4a90e2;
+      border-bottom: 2px solid #4a90e2;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    h3 {
+      font-size: 22px;
+      color: #4a90e2;
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-size: 16px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      background: #fff;
+      color: #333;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      background: #4a90e2;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #407ec9;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .green {
+      color: #4CAF50;
+      font-size: 20px;
+      animation: blink 1s linear infinite;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+    .comment {
+      color: #666;
+      font-size: 16px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .currency-container {
+      margin-top: 15px;
+    }
+    /* Malzeme Hesaplama Bölümleri */
+    .material-section {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      display: none;
+    }
+    /* Admin Modal */
+    #adminModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+    #adminContent {
+      background: #fff;
+      color: #333;
+      width: 90%;
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 20px;
+      border-radius: 6px;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    #adminContent h2, #adminContent h3 {
+      color: #4a90e2;
+    }
+    .admin-section {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #f0f2f5;
+    }
+    .small-input {
+      width: 80px;
+    }
+    .close-btn {
+      background: #ccc;
+      color: #333;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .saved-message {
+      color: #4CAF50;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 10px;
+      display: none;
+    }
+    .warning {
+      color: #e67e22;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="left">
-            <h2>Otomatik Fiyat Hesaplama</h2>
-            
-            <label for="kg">Toplam Kg:</label>
-            <input type="number" id="kg" placeholder="Kg girin">
-            
-            <label for="süre">Kesim Süresi (dk):</label>
-            <input type="number" id="süre" placeholder="Süre girin">
-            
-            <label for="kesim_türü">Kesim Türü:</label>
-            <select id="kesim_türü">
-                <option value="2.0">Paslanmaz Çelik</option>
-                <option value="1.75">Siyah Saç</option>
-                <option value="2.0">ALMG Kesim</option>
-            </select>
-            
-            <label for="fiber">5040 Fiber Seçeneği:</label>
-            <select id="fiber">
-                <option value="1">Yok</option>
-                <option value="3">3x</option>
-                <option value="4" selected>4x</option>
-                <option value="6">6x</option>
-            </select>
-            
-            <label for="yerlesim">Yerleşim Karmaşıklık Fiyat Artışı:</label>
-            <select id="yerlesim">
-                <option value="1">Yok</option>
-                <option value="1.1">%10</option>
-                <option value="1.2">%20</option>
-                <option value="1.3">%30</option>
-                <option value="1.4">%40</option>
-                <option value="1.5">%50</option>
-            </select>
-            
-            <button onclick="hesapla()">Hesapla</button>
-            <button onclick="temizle()">Temizle</button>
-            
-            <div class="result" id="sonuc"></div>
-            <div class="result" id="toplamFiyat"></div>
-            <div class="comment" id="yorum"></div>
-        </div>
-        <div class="right">
-            <h2>Malzeme Fiyat Hesaplama</h2>
-            
-            <label for="malzeme_kg">Malzeme Kg:</label>
-            <input type="number" id="malzeme_kg" placeholder="Kg girin">
-            
-            <label for="malzeme_türü">Malzeme Türü:</label>
-            <select id="malzeme_türü">
-                <option value="1.20">Siyah</option>
-                <option value="4.00">Paslanmaz 304</option>
-                <option value="5.00">Paslanmaz 316</option>
-                <option value="6.00">Paslanmaz 309</option>
-                <option value="8.25">Paslanmaz 310</option>
-                <option value="5.50">Paslanmaz 321</option>
-                <option value="4.00">Paslanmaz 430</option>
-                <option value="6.50">Alüminyum (5083 kalite)</option>
-                <option value="6.00">Alüminyum (5083 kalite)</option>
-                <option value="4.50">Alüminyum (1050 kalite)</option>
-                <option value="5.50">Alüminyum (5754 kalite)</option>
-                <option value="4.25">Hardox</option>
-                <option value="1.25">Galvaniz</option>
-                <option value="14.50">Pirinç</option>
-                <option value="16.00">Bakır</option>
-            </select>
-            
-            <label for="malzeme_fiyat">Malzeme Fiyatı ($/kg):</label>
-            <input type="number" id="malzeme_fiyat" value="0">
-            
-            <button onclick="malzemeHesapla()">Malzeme Fiyatı Hesapla</button>
-            
-            <div class="result" id="malzeme_sonuc"></div>
-        </div>
+  <!-- Üst Header -->
+  <header class="main-header">
+    <button onclick="window.open('https://www.tcmb.gov.tr/kurlar/kurlar_tr.html','_blank')">TCMB Kurlar</button>
+    <button onclick="openAdminModal()">Admin Panel</button>
+  </header>
+
+  <!-- Ana Konteyner -->
+  <div class="container">
+    <!-- Sol Panel: Otomatik Fiyat Hesaplama -->
+    <div class="left">
+      <h2>Otomatik Fiyat Hesaplama</h2>
+      
+      <label for="kg" title="Girilen kilogram değeri, toplam kg fiyatını hesaplamak için kullanılır.">Toplam Kg:</label>
+      <input type="number" id="kg" placeholder="Kg girin">
+      
+      <label for="süre" title="Kesim süresi dakikadır.">Kesim Süresi (dk):</label>
+      <input type="number" id="süre" placeholder="Süre girin">
+      
+      <label for="kesim_türü" title="Kesim türü, dakika başına $ fiyatını belirler.">Kesim Türü:</label>
+      <select id="kesim_türü">
+        <!-- Admin panelden yüklenecek kesim türleri seçenekleri -->
+      </select>
+      
+      <label for="fiber" title="5040 Fiber seçeneği kesim fiyatını etkiler.">5040 Fiber Seçeneği:</label>
+      <select id="fiber">
+        <option value="1">Yok</option>
+        <option value="3">3x</option>
+        <option value="4" selected>4x</option>
+        <option value="6">6x</option>
+      </select>
+      
+      <label for="yerlesim" title="Yerleşim karmaşıklığına göre fiyat artışı uygular.">Yerleşim Karmaşıklık Fiyat Artışı:</label>
+      <select id="yerlesim">
+        <option value="1">Yok</option>
+        <option value="1.1">%10</option>
+        <option value="1.2">%20</option>
+        <option value="1.3">%30</option>
+        <option value="1.4">%40</option>
+        <option value="1.5">%50</option>
+      </select>
+      
+      <!-- Para Birimi Seçimi -->
+      <div class="currency-container">
+        <label for="currencySelect" title="Hesaplama sonuçlarını görüntülemek için para birimi seçin.">Para Birimi:</label>
+        <select id="currencySelect">
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="TRY">TRY</option>
+        </select>
+      </div>
+      
+      <button onclick="hesapla()">Hesapla</button>
+      <button onclick="temizle()">Temizle</button>
+      
+      <div class="result" id="sonuc"></div>
+      <div class="result" id="toplamFiyat"></div>
+      <div class="comment" id="yorum"></div>
     </div>
     
-    <script>
-        function hesapla() {
-            let kg = parseFloat(document.getElementById("kg").value) || 0;
-            let süre = parseFloat(document.getElementById("süre").value) || 0;
-            let kesimFaktörü = parseFloat(document.getElementById("kesim_türü").value);
-            let fiberÇarpan = parseFloat(document.getElementById("fiber").value);
-            let yerlesimÇarpan = parseFloat(document.getElementById("yerlesim").value);
-            
-            // Kilogram fiyatı
-            let kgFiyat = kg * 0.36;
+    <!-- Sağ Panel: Malzeme Fiyat Hesaplama -->
+    <div class="right">
+      <h2>Malzeme Fiyat Hesaplama</h2>
+      <button id="showNextMaterialBtn" onclick="showNextMaterialSection()">Bir sonraki malzeme bölümünü göster</button>
+      
+      <!-- Malzeme Hesaplama Bölümleri (her biri başlangıçta gizli) -->
+      <div id="materialSection1" class="material-section">
+        <h3>Malzeme Hesaplama 1</h3>
+        <label for="malzeme_türü1" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
+        <select id="malzeme_türü1" onchange="document.getElementById('malzeme_fiyat1').value=this.value">
+          <!-- Admin panelden yüklenecek malzeme seçenekleri -->
+        </select>
+        <label for="malzeme_kg1" title="Seçilen malzemenin kilogram miktarı.">Malzeme Kg:</label>
+        <input type="number" id="malzeme_kg1" placeholder="Kg girin">
+        <label for="malzeme_fiyat1" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
+        <input type="number" id="malzeme_fiyat1" value="0">
+        <button onclick="malzemeHesapla(1)">Malzeme Fiyatı Hesapla</button>
+        <div class="result" id="malzeme_sonuc1"></div>
+      </div>
+      
+      <div id="materialSection2" class="material-section">
+        <h3>Malzeme Hesaplama 2</h3>
+        <label for="malzeme_türü2" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
+        <select id="malzeme_türü2" onchange="document.getElementById('malzeme_fiyat2').value=this.value">
+          <!-- Admin panelden yüklenecek malzeme seçenekleri -->
+        </select>
+        <label for="malzeme_kg2" title="Seçilen malzemenin kilogram miktarı.">Malzeme Kg:</label>
+        <input type="number" id="malzeme_kg2" placeholder="Kg girin">
+        <label for="malzeme_fiyat2" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
+        <input type="number" id="malzeme_fiyat2" value="0">
+        <button onclick="malzemeHesapla(2)">Malzeme Fiyatı Hesapla</button>
+        <div class="result" id="malzeme_sonuc2"></div>
+      </div>
+      
+      <div id="materialSection3" class="material-section">
+        <h3>Malzeme Hesaplama 3</h3>
+        <label for="malzeme_türü3" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
+        <select id="malzeme_türü3" onchange="document.getElementById('malzeme_fiyat3').value=this.value">
+          <!-- Admin panelden yüklenecek malzeme seçenekleri -->
+        </select>
+        <label for="malzeme_kg3" title="Seçilen malzemenin kilogram miktarı.">Malzeme Kg:</label>
+        <input type="number" id="malzeme_kg3" placeholder="Kg girin">
+        <label for="malzeme_fiyat3" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
+        <input type="number" id="malzeme_fiyat3" value="0">
+        <button onclick="malzemeHesapla(3)">Malzeme Fiyatı Hesapla</button>
+        <div class="result" id="malzeme_sonuc3"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Admin Modal -->
+  <div id="adminModal">
+    <div id="adminContent">
+      <div id="adminLoginSection">
+        <label for="adminPass" title="Admin paneline erişmek için şifre girin.">Şifre:</label>
+        <input type="password" id="adminPass" placeholder="Şifre girin">
+        <button onclick="checkAdmin()" style="color: orange;">Giriş</button>
+      </div>
+      <div id="adminSettings" style="display:none;">
+        <div class="warning">Not: Tarayıcı verileri silinirse tüm ayarlar sıfırlanır!</div>
+        <div class="admin-section">
+          <h3>Genel Fiyat Parametreleri</h3>
+          <label for="admin_kgPriceFactor" title="Kg başına fiyat faktörü (USD bazlı).">Kg Başına Fiyat Faktörü ($):</label>
+          <input type="number" id="admin_kgPriceFactor" step="0.01">
+          <h4>Kesim Türü Faktörleri (Dakika başına $ fiyatı)</h4>
+          <table id="adminKesimTable">
+            <thead>
+              <tr>
+                <th>Kesim Türü</th>
+                <th>Faktör ($/dk)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JavaScript ile doldurulacak -->
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-section">
+          <h3>Malzeme Fiyatları ($/kg)</h3>
+          <table id="adminMaterialTable">
+            <thead>
+              <tr>
+                <th>Malzeme</th>
+                <th>Fiyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JavaScript ile doldurulacak -->
+            </tbody>
+          </table>
+        </div>
+        <button onclick="saveAdminSettings()">Kaydet</button>
+        <p class="saved-message" id="savedMessage">Fiyatlar kaydedildi!</p>
+      </div>
+      <!-- Kapat Butonunu en alta aldık -->
+      <button class="close-btn" onclick="closeAdminModal()">Kapat</button>
+    </div>
+  </div>
+  
+  <script>
+    // Çoklu para birimi desteği
+    const currencyRates = {
+      'USD': 1,
+      'EUR': 0.9,
+      'TRY': 20
+    };
+    const currencySymbols = {
+      'USD': '$',
+      'EUR': '€',
+      'TRY': '₺'
+    };
 
-            // Süre fiyatı
-            let süreFiyat = süre * kesimFaktörü * fiberÇarpan;
+    // Varsayılan parametreler
+    const defaultParameters = {
+      kgPriceFactor: 0.36,
+      kesimFactors: {
+        'Paslanmaz Çelik': 2.0,
+        'Siyah Saç': 1.75,
+        'ALMG Kesim': 2.0
+      },
+      fiberDefault: 4,
+      yerlesimDefault: 1,
+      materialPrices: {
+        'Siyah': 1.20,
+        'Paslanmaz 304': 4.00,
+        'Paslanmaz 316': 5.00,
+        'Paslanmaz 309': 6.00,
+        'Paslanmaz 310': 8.25,
+        'Paslanmaz 321': 5.50,
+        'Paslanmaz 430': 4.00,
+        'Alüminyum (5083 kalite)': 6.50,
+        'Alüminyum (1050 kalite)': 4.50,
+        'Alüminyum (5754 kalite)': 5.50,
+        'Hardox': 4.25,
+        'Galvaniz': 1.25,
+        'Pirinç': 14.50,
+        'Bakır': 16.00
+      }
+    };
 
-            // En yüksek fiyatı seçiyoruz
-            let toplamFiyat = (kgFiyat > süreFiyat ? kgFiyat : süreFiyat);
+    // Global parametre nesnesi (localStorage'dan yüklenecek veya varsayılanlar kullanılacak)
+    let parameters = {};
 
-            // Ortalama fiyat hesaplama %60 ile
-            let ortalamaFiyat = (kgFiyat * 0.60) + (süreFiyat * 0.40);
-            let yorumMetni = `Kg fiyatı: $${kgFiyat.toFixed(2)}, Süre fiyatı: $${süreFiyat.toFixed(2)}<br>Fiyat dengesini kurmak için hesaplanan ortalama: $${ortalamaFiyat.toFixed(2)}`;
-            document.getElementById("yorum").innerHTML = yorumMetni;
+    // Global base price ve malzeme hesaplamaları için toplamlar
+    let basePrice = 0;
+    let materialTotals = {1: 0, 2: 0, 3: 0};
 
-            // Sonucu göster
-            document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br> Süre Fiyatı: $${süreFiyat.toFixed(2)}`;
-            document.getElementById("toplamFiyat").innerHTML = `<strong>En Yüksek Fiyat: $${toplamFiyat.toFixed(2)}</strong>`;
+    // Malzeme bölümlerinin kaç tanesinin görünür olduğunu tutan sayaç
+    let visibleMaterialSections = 0;
+
+    // LocalStorage’dan parametreleri yükle; yoksa varsayılanları kullan
+    function loadParameters() {
+      const stored = localStorage.getItem("pricingParameters");
+      if (stored) {
+        parameters = JSON.parse(stored);
+      } else {
+        parameters = defaultParameters;
+      }
+    }
+
+    // Parametreleri localStorage’a kaydet
+    function saveParameters() {
+      localStorage.setItem("pricingParameters", JSON.stringify(parameters));
+    }
+
+    // Sol paneldeki "kesim_türü" ve sağ paneldeki "malzeme_türü" seçeneklerini güncelle
+    function updateSelectOptions() {
+      // Kesim türleri
+      const kesimSelect = document.getElementById("kesim_türü");
+      kesimSelect.innerHTML = "";
+      for (let type in parameters.kesimFactors) {
+        let opt = document.createElement("option");
+        opt.value = parameters.kesimFactors[type];
+        opt.innerText = type;
+        kesimSelect.appendChild(opt);
+      }
+      // Fiber ve yerleşim dropdown varsayılanları (değiştirilemesin)
+      document.getElementById("fiber").value = parameters.fiberDefault;
+      document.getElementById("yerlesim").value = parameters.yerlesimDefault;
+      
+      // Malzeme türleri için (her 3 bölüm için)
+      const updateMaterialSelect = (selectId) => {
+        const materialSelect = document.getElementById(selectId);
+        materialSelect.innerHTML = "";
+        for (let material in parameters.materialPrices) {
+          let opt = document.createElement("option");
+          opt.value = parameters.materialPrices[material];
+          opt.innerText = material;
+          materialSelect.appendChild(opt);
         }
+      };
+      updateMaterialSelect("malzeme_türü1");
+      updateMaterialSelect("malzeme_türü2");
+      updateMaterialSelect("malzeme_türü3");
+    }
 
-        function malzemeHesapla() {
-            let malzemeKg = parseFloat(document.getElementById("malzeme_kg").value) || 0;
-            let malzemeFiyat = parseFloat(document.getElementById("malzeme_fiyat").value);
-            let malzemeTürü = parseFloat(document.getElementById("malzeme_türü").value);
+    // Hesaplama Fonksiyonları
+    function hesapla() {
+      let kg = parseFloat(document.getElementById("kg").value) || 0;
+      let süre = parseFloat(document.getElementById("süre").value) || 0;
+      let kesimFaktor = parseFloat(document.getElementById("kesim_türü").value);
+      let fiberCarpan = parseFloat(document.getElementById("fiber").value);
+      let yerlesimCarpan = parseFloat(document.getElementById("yerlesim").value);
+      let kgFiyat = kg * parameters.kgPriceFactor;
+      let süreFiyat = süre * kesimFaktor * fiberCarpan;
+      let maxFiyat = (kgFiyat > süreFiyat ? kgFiyat : süreFiyat);
+      maxFiyat = maxFiyat * yerlesimCarpan; // Yerleşim artışı uygulanıyor
+      let ortalamaFiyat = (kgFiyat * 0.60) + (süreFiyat * 0.40);
+      basePrice = maxFiyat; // global base price
+      
+      document.getElementById("yorum").innerHTML = `Kg fiyatı: $${kgFiyat.toFixed(2)}, Süre fiyatı: $${süreFiyat.toFixed(2)}<br>Ortalama: $${ortalamaFiyat.toFixed(2)}`;
+      document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br>Süre Fiyatı: $${süreFiyat.toFixed(2)}`;
+      updateOverallTotal();
+    }
 
-            if (malzemeFiyat === 0) {
-                malzemeFiyat = malzemeTürü;
-            }
-            
-            let toplamMalzemeFiyat = malzemeKg * malzemeFiyat;
+    function updateOverallTotal() {
+      let totalMaterials = materialTotals[1] + materialTotals[2] + materialTotals[3];
+      let overall = basePrice + totalMaterials;
+      const currency = document.getElementById("currencySelect").value;
+      const rate = currencyRates[currency] || 1;
+      const symbol = currencySymbols[currency] || '$';
+      let convertedBase = basePrice * rate;
+      let convertedOverall = overall * rate;
+      document.getElementById("toplamFiyat").innerHTML = `<strong>En Yüksek Fiyat: ${symbol}${convertedBase.toFixed(2)}</strong><br><strong class="green">Toplam (Malzeme Dahil): ${symbol}${convertedOverall.toFixed(2)}</strong>`;
+    }
 
-            // Malzeme fiyatını hesapla ve yansıt
-            document.getElementById("malzeme_sonuc").innerHTML = `Malzeme Fiyatı: $${toplamMalzemeFiyat.toFixed(2)}`;
+    function malzemeHesapla(index) {
+      let kg = parseFloat(document.getElementById("malzeme_kg" + index).value) || 0;
+      let enteredPrice = parseFloat(document.getElementById("malzeme_fiyat" + index).value);
+      let selectedPrice = parseFloat(document.getElementById("malzeme_türü" + index).value);
+      let price = (enteredPrice === 0 ? selectedPrice : enteredPrice);
+      let total = kg * price;
+      materialTotals[index] = total;
+      document.getElementById("malzeme_sonuc" + index).innerHTML = `Malzeme Fiyatı: $${total.toFixed(2)}`;
+      updateOverallTotal();
+    }
 
-            // Toplam fiyatı alıp malzeme fiyatını ekle
-            let toplamFiyat = parseFloat(document.getElementById("toplamFiyat").innerText.replace('En Yüksek Fiyat: $', '')) || 0;
-            let toplamMalzemeDahilFiyat = toplamFiyat + toplamMalzemeFiyat;
+    function temizle() {
+      document.getElementById("kg").value = "";
+      document.getElementById("süre").value = "";
+      document.getElementById("sonuc").innerHTML = "";
+      document.getElementById("toplamFiyat").innerHTML = "";
+      document.getElementById("yorum").innerHTML = "";
+      for(let i = 1; i <= 3; i++) {
+        document.getElementById("malzeme_kg" + i).value = "";
+        document.getElementById("malzeme_fiyat" + i).value = "";
+        document.getElementById("malzeme_sonuc" + i).innerHTML = "";
+      }
+      basePrice = 0;
+      materialTotals = {1: 0, 2: 0, 3: 0};
+    }
 
-            // Malzeme dahil fiyatı yeşil renkte ve yanıp sönen şekilde göster
-            document.getElementById("toplamFiyat").innerHTML += `<br><strong class="green">Toplam Fiyat (Malzeme Dahil): $${toplamMalzemeDahilFiyat.toFixed(2)}</strong>`;
+    // Malzeme bölümlerini sırayla açan fonksiyon
+    function showNextMaterialSection() {
+      if (visibleMaterialSections < 3) {
+        visibleMaterialSections++;
+        document.getElementById("materialSection" + visibleMaterialSections).style.display = "block";
+        if (visibleMaterialSections === 3) {
+          document.getElementById("showNextMaterialBtn").disabled = true;
+          document.getElementById("showNextMaterialBtn").innerText = "Tüm bölümler gösterildi";
         }
+      }
+    }
 
-        function temizle() {
-            document.getElementById("kg").value = "";
-            document.getElementById("süre").value = "";
-            document.getElementById("kesim_türü").value = "2.0";
-            document.getElementById("fiber").value = "4";
-            document.getElementById("yerlesim").value = "1";
-            document.getElementById("malzeme_kg").value = "";
-            document.getElementById("malzeme_fiyat").value = "";
-            document.getElementById("sonuc").innerHTML = "";
-            document.getElementById("toplamFiyat").innerHTML = "";
-            document.getElementById("malzeme_sonuc").innerHTML = "";
-            document.getElementById("yorum").innerHTML = "";
+    // Admin Panel Fonksiyonları
+    function openAdminModal() {
+      document.getElementById("adminModal").style.display = "block";
+      document.getElementById("adminLoginSection").style.display = "block";
+      document.getElementById("adminSettings").style.display = "none";
+    }
+
+    function closeAdminModal() {
+      document.getElementById("adminModal").style.display = "none";
+      document.getElementById("adminPass").value = "";
+    }
+
+    function checkAdmin() {
+      let pass = document.getElementById("adminPass").value;
+      if(pass === "1905") {
+        document.getElementById("adminLoginSection").style.display = "none";
+        document.getElementById("adminSettings").style.display = "block";
+        loadAdminSettings();
+      } else {
+        alert("Hatalı şifre!");
+      }
+    }
+
+    function loadAdminSettings() {
+      document.getElementById("admin_kgPriceFactor").value = parameters.kgPriceFactor;
+      const kesimTableBody = document.querySelector("#adminKesimTable tbody");
+      kesimTableBody.innerHTML = "";
+      for (let type in parameters.kesimFactors) {
+        let row = document.createElement("tr");
+        let cellType = document.createElement("td");
+        cellType.innerText = type;
+        let cellInput = document.createElement("td");
+        let input = document.createElement("input");
+        input.type = "number";
+        input.step = "0.01";
+        input.className = "small-input";
+        input.value = parameters.kesimFactors[type];
+        input.id = "admin_kesim_" + type.replace(/\s/g, "_");
+        input.title = "Dakika başına $ fiyatı";
+        cellInput.appendChild(input);
+        row.appendChild(cellType);
+        row.appendChild(cellInput);
+        kesimTableBody.appendChild(row);
+      }
+      
+      const materialTableBody = document.querySelector("#adminMaterialTable tbody");
+      materialTableBody.innerHTML = "";
+      for (let material in parameters.materialPrices) {
+        let row = document.createElement("tr");
+        let cellMaterial = document.createElement("td");
+        cellMaterial.innerText = material;
+        let cellInput = document.createElement("td");
+        let input = document.createElement("input");
+        input.type = "number";
+        input.step = "0.01";
+        input.className = "small-input";
+        input.value = parameters.materialPrices[material];
+        input.id = "admin_material_" + material.replace(/\s/g, "_");
+        input.title = "Malzeme fiyatı (USD bazlı)";
+        cellInput.appendChild(input);
+        row.appendChild(cellMaterial);
+        row.appendChild(cellInput);
+        materialTableBody.appendChild(row);
+      }
+    }
+
+    function saveAdminSettings() {
+      parameters.kgPriceFactor = parseFloat(document.getElementById("admin_kgPriceFactor").value) || parameters.kgPriceFactor;
+      for (let type in parameters.kesimFactors) {
+        let inputVal = parseFloat(document.getElementById("admin_kesim_" + type.replace(/\s/g, "_")).value);
+        if(!isNaN(inputVal)) {
+          parameters.kesimFactors[type] = inputVal;
         }
-    </script>
+      }
+      for (let material in parameters.materialPrices) {
+        let inputVal = parseFloat(document.getElementById("admin_material_" + material.replace(/\s/g, "_")).value);
+        if(!isNaN(inputVal)) {
+          parameters.materialPrices[material] = inputVal;
+        }
+      }
+      saveParameters();
+      updateSelectOptions();
+      const savedMsg = document.getElementById("savedMessage");
+      savedMsg.style.display = "block";
+      setTimeout(() => { savedMsg.style.display = "none"; }, 2000);
+    }
+
+    // Para birimi seçimi değiştiğinde hesaplamayı güncelle
+    document.getElementById("currencySelect").addEventListener("change", updateOverallTotal);
+
+    window.onload = function() {
+      loadParameters();
+      updateSelectOptions();
+    }
+  </script>
 </body>
 </html>
