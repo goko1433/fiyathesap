@@ -146,7 +146,7 @@
       text-align: center;
     }
     
-    /* Ana Konteyner */
+    /* Ana Konteyner: Solda Lazer, Sağda Malzeme */
     .container {
       display: flex;
       max-width: 1600px;
@@ -330,18 +330,20 @@
       margin-top: 10px;
     }
     
-    /* Mobil Uyumluluk */
+    /* Mobil Uyumluluk: Solda lazer, sağda malzeme, sarmasın => yan yana */
     @media (max-width: 768px) {
       .container {
         flex-direction: row;
-        flex-wrap: wrap;
+        flex-wrap: nowrap; /* Yan yana kalmasını sağla, gerekirse yatay kaydırma olur */
+        overflow-x: auto;  /* Mobilde dar ekranda yatay kaydırma */
       }
       .left, .right {
-        flex: 1 1 50%;
+        flex: 0 0 50%;     /* İkisi de %50 yer kaplasın */
+        box-sizing: border-box;
       }
     }
     
-    /* Fiyat Ayarlama Butonları */
+    /* Fiyat Ayarlama Butonları en altta kalsın */
     #priceAdjustmentContainer {
       text-align: center;
       margin: 20px auto;
@@ -364,8 +366,8 @@
     <!-- Tema Toggle ve Kayar Uyarı Metni -->
     <div class="scrolling-container">
       <button class="theme-toggle-btn" onclick="toggleTheme()"></button>
-      <marquee behavior="scroll" direction="left" scrollamount="6">
-        Çıkan fiyati işin durumuna, yerleşime, malzemenin değerine göre yorumlayıp kontrol edelim 
+      <marquee behavior="scroll" direction="left" scrollamount="2">
+        Çıkan fiyati işin durumuna, yerleşime, malzemenin değerine göre yorumlayıp kontrol edelim diye uyarı olsun
       </marquee>
     </div>
   </header>
@@ -379,30 +381,28 @@
     <div class="left">
       <h2>Lazer Kesim Hesaplama</h2>
       
-      <label for="kg" title="Girilen kilogram değeri, toplam kg fiyatını hesaplamak için kullanılır.">Toplam Kg:</label>
+      <label for="kg">Toplam Kg:</label>
       <input type="number" id="kg" placeholder="Kg girin">
       
-      <label for="süre" title="Kesim süresi dakikadır.">Kesim Süresi (dk):</label>
+      <label for="süre">Kesim Süresi (dk):</label>
       <input type="number" id="süre" placeholder="Süre girin">
       
-      <label for="kesim_türü" title="Kesim türü, dakika başına $ fiyatını belirler.">Kesim Türü:</label>
+      <label for="kesim_türü">Kesim Türü:</label>
       <select id="kesim_türü">
-        <!-- Admin panelden yüklenecek kesim türleri seçenekleri -->
+        <!-- Admin panelden yüklenecek kesim türleri -->
       </select>
       
-      <!-- Dual Lazer Toggle Butonu -->
+      <!-- İki Tür Lazer Toggle -->
       <button type="button" onclick="toggleDualLaser()">İki Tür Hesapla</button>
-      <!-- Dual Lazer Alanı -->
       <div id="dualLaser" class="dual-laser">
-        <label for="kesim_türü_dual" title="İkinci kesim türünü seçin.">Kesim Türü 2:</label>
-        <select id="kesim_türü_dual">
-          <!-- Seçenekler toggleDualLaser() ile doldurulacak -->
-        </select>
-        <label for="süre_dual" title="İkinci kesim süresi (dk).">Kesim Süresi 2 (dk):</label>
+        <label for="kesim_türü_dual">Kesim Türü 2:</label>
+        <select id="kesim_türü_dual"></select>
+        
+        <label for="süre_dual">Kesim Süresi 2 (dk):</label>
         <input type="number" id="süre_dual" placeholder="Süre girin">
       </div>
       
-      <label for="fiber" title="5040 Fiber seçeneği kesim fiyatını etkiler.">5040 Fiber Seçeneği:</label>
+      <label for="fiber">5040 Fiber Seçeneği:</label>
       <select id="fiber">
         <option value="1">Yok</option>
         <option value="3">3x</option>
@@ -410,7 +410,7 @@
         <option value="6">6x</option>
       </select>
       
-      <label for="yerlesim" title="Yerleşim karmaşıklığına göre fiyat artışı uygular.">Yerleşim Karmaşıklık Fiyat Artışı:</label>
+      <label for="yerlesim">Yerleşim Karmaşıklık Fiyat Artışı:</label>
       <select id="yerlesim">
         <option value="1">Yok</option>
         <option value="1.1">%10</option>
@@ -420,9 +420,8 @@
         <option value="1.5">%50</option>
       </select>
       
-      <!-- Para Birimi Seçimi -->
       <div class="currency-container">
-        <label for="currencySelect" title="Hesaplama sonuçlarını görüntülemek için para birimi seçin.">Para Birimi:</label>
+        <label for="currencySelect">Para Birimi:</label>
         <select id="currencySelect">
           <option value="USD">USD</option>
           <option value="EUR">EUR</option>
@@ -435,7 +434,6 @@
       
       <div class="result" id="sonuc"></div>
       <div class="result" id="toplamFiyat"></div>
-      <!-- Ortalama Fiyat Önerisi Alanı -->
       <div class="result" id="ortalamaOneri"></div>
       <div class="comment" id="yorum"></div>
     </div>
@@ -445,82 +443,85 @@
       <h2>Malzeme Fiyat Hesaplama</h2>
       <button id="showNextMaterialBtn" onclick="showNextMaterialSection()">Bir sonraki malzeme bölümünü göster</button>
       
-      <!-- Malzeme Hesaplama Bölümleri 1 -->
+      <!-- Malzeme Hesaplama Bölümü 1 -->
       <div id="materialSection1" class="material-section">
         <h3>Malzeme Hesaplama 1</h3>
-        <label for="malzeme_türü1" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
-        <select id="malzeme_türü1" onchange="document.getElementById('malzeme_fiyat1').value=this.value">
-          <!-- Admin panelden yüklenecek malzeme seçenekleri -->
-        </select>
-        <label for="malzeme_kg1" title="Seçilen malzemenin kilogram miktarı.">Malzeme Kg:</label>
+        <label for="malzeme_türü1">Malzeme Türü:</label>
+        <select id="malzeme_türü1" onchange="document.getElementById('malzeme_fiyat1').value=this.value"></select>
+        
+        <label for="malzeme_kg1">Malzeme Kg:</label>
         <input type="number" id="malzeme_kg1" placeholder="Kg girin">
-        <label for="malzeme_fiyat1" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
+        
+        <label for="malzeme_fiyat1">Malzeme Fiyatı ($/kg):</label>
         <input type="number" id="malzeme_fiyat1" value="0">
+        
         <button onclick="malzemeHesapla(1)">Malzeme Fiyatı Hesapla</button>
-        <!-- Dual hesap butonu -->
+        
         <button type="button" onclick="toggleDualMaterial(1)">İki Tür Hesapla</button>
         <div id="dualMaterial1" class="dual-material" style="display:none;">
-          <label for="malzeme_türü1_dual" title="İkinci malzeme türünü seçin.">Malzeme Türü 2:</label>
-          <select id="malzeme_türü1_dual" onchange="document.getElementById('malzeme_fiyat1_dual').value=this.value">
-            <!-- Admin panelden yüklenecek malzeme seçenekleri -->
-          </select>
-          <label for="malzeme_kg1_dual" title="İkinci malzemenin kilogram miktarı.">Malzeme Kg 2:</label>
+          <label for="malzeme_türü1_dual">Malzeme Türü 2:</label>
+          <select id="malzeme_türü1_dual" onchange="document.getElementById('malzeme_fiyat1_dual').value=this.value"></select>
+          
+          <label for="malzeme_kg1_dual">Malzeme Kg 2:</label>
           <input type="number" id="malzeme_kg1_dual" placeholder="Kg girin">
-          <label for="malzeme_fiyat1_dual" title="İkinci malzeme fiyatı (USD bazlı).">Malzeme Fiyatı 2 ($/kg):</label>
+          
+          <label for="malzeme_fiyat1_dual">Malzeme Fiyatı 2 ($/kg):</label>
           <input type="number" id="malzeme_fiyat1_dual" value="0">
         </div>
         <div class="result" id="malzeme_sonuc1"></div>
       </div>
       
-      <!-- Malzeme Hesaplama Bölümleri 2 -->
+      <!-- Malzeme Hesaplama Bölümü 2 -->
       <div id="materialSection2" class="material-section">
         <h3>Malzeme Hesaplama 2</h3>
-        <label for="malzeme_türü2" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
-        <select id="malzeme_türü2" onchange="document.getElementById('malzeme_fiyat2').value=this.value">
-          <!-- Admin panelden yüklenecek malzeme seçenekleri -->
-        </select>
-        <label for="malzeme_kg2" title="Seçilen malzemenin kilogram miktarı.">Malzeme Kg:</label>
+        <label for="malzeme_türü2">Malzeme Türü:</label>
+        <select id="malzeme_türü2" onchange="document.getElementById('malzeme_fiyat2').value=this.value"></select>
+        
+        <label for="malzeme_kg2">Malzeme Kg:</label>
         <input type="number" id="malzeme_kg2" placeholder="Kg girin">
-        <label for="malzeme_fiyat2" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
+        
+        <label for="malzeme_fiyat2">Malzeme Fiyatı ($/kg):</label>
         <input type="number" id="malzeme_fiyat2" value="0">
+        
         <button onclick="malzemeHesapla(2)">Malzeme Fiyatı Hesapla</button>
-        <!-- Dual hesap butonu -->
+        
         <button type="button" onclick="toggleDualMaterial(2)">İki Tür Hesapla</button>
         <div id="dualMaterial2" class="dual-material" style="display:none;">
-          <label for="malzeme_türü2_dual" title="İkinci malzeme türünü seçin.">Malzeme Türü 2:</label>
-          <select id="malzeme_türü2_dual" onchange="document.getElementById('malzeme_fiyat2_dual').value=this.value">
-            <!-- Admin panelden yüklenecek malzeme seçenekleri -->
-          </select>
-          <label for="malzeme_kg2_dual" title="İkinci malzemenin kilogram miktarı.">Malzeme Kg 2:</label>
+          <label for="malzeme_türü2_dual">Malzeme Türü 2:</label>
+          <select id="malzeme_türü2_dual" onchange="document.getElementById('malzeme_fiyat2_dual').value=this.value"></select>
+          
+          <label for="malzeme_kg2_dual">Malzeme Kg 2:</label>
           <input type="number" id="malzeme_kg2_dual" placeholder="Kg girin">
-          <label for="malzeme_fiyat2_dual" title="İkinci malzeme fiyatı (USD bazlı).">Malzeme Fiyatı 2 ($/kg):</label>
+          
+          <label for="malzeme_fiyat2_dual">Malzeme Fiyatı 2 ($/kg):</label>
           <input type="number" id="malzeme_fiyat2_dual" value="0">
         </div>
         <div class="result" id="malzeme_sonuc2"></div>
       </div>
       
-      <!-- Malzeme Hesaplama Bölümleri 3 -->
+      <!-- Malzeme Hesaplama Bölümü 3 -->
       <div id="materialSection3" class="material-section">
         <h3>Malzeme Hesaplama 3</h3>
-        <label for="malzeme_türü3" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
-        <select id="malzeme_türü3" onchange="document.getElementById('malzeme_fiyat3').value=this.value">
-          <!-- Admin panelden yüklenecek malzeme seçenekleri -->
-        </select>
-        <label for="malzeme_kg3" title="Seçilen malzemenin kilogram miktarı.">Malzeme Kg:</label>
+        <label for="malzeme_türü3">Malzeme Türü:</label>
+        <select id="malzeme_türü3" onchange="document.getElementById('malzeme_fiyat3').value=this.value"></select>
+        
+        <label for="malzeme_kg3">Malzeme Kg:</label>
         <input type="number" id="malzeme_kg3" placeholder="Kg girin">
-        <label for="malzeme_fiyat3" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
+        
+        <label for="malzeme_fiyat3">Malzeme Fiyatı ($/kg):</label>
         <input type="number" id="malzeme_fiyat3" value="0">
+        
         <button onclick="malzemeHesapla(3)">Malzeme Fiyatı Hesapla</button>
-        <!-- Dual hesap butonu -->
+        
         <button type="button" onclick="toggleDualMaterial(3)">İki Tür Hesapla</button>
         <div id="dualMaterial3" class="dual-material" style="display:none;">
-          <label for="malzeme_türü3_dual" title="İkinci malzeme türünü seçin.">Malzeme Türü 2:</label>
-          <select id="malzeme_türü3_dual" onchange="document.getElementById('malzeme_fiyat3_dual').value=this.value">
-            <!-- Admin panelden yüklenecek malzeme seçenekleri -->
-          </select>
-          <label for="malzeme_kg3_dual" title="İkinci malzemenin kilogram miktarı.">Malzeme Kg 2:</label>
+          <label for="malzeme_türü3_dual">Malzeme Türü 2:</label>
+          <select id="malzeme_türü3_dual" onchange="document.getElementById('malzeme_fiyat3_dual').value=this.value"></select>
+          
+          <label for="malzeme_kg3_dual">Malzeme Kg 2:</label>
           <input type="number" id="malzeme_kg3_dual" placeholder="Kg girin">
-          <label for="malzeme_fiyat3_dual" title="İkinci malzeme fiyatı (USD bazlı).">Malzeme Fiyatı 2 ($/kg):</label>
+          
+          <label for="malzeme_fiyat3_dual">Malzeme Fiyatı 2 ($/kg):</label>
           <input type="number" id="malzeme_fiyat3_dual" value="0">
         </div>
         <div class="result" id="malzeme_sonuc3"></div>
@@ -540,11 +541,10 @@
         <div class="warning">Not: Tarayıcı verileri silinirse tüm ayarlar sıfırlanır!</div>
         <div class="admin-section">
           <h3>Genel Fiyat Parametreleri</h3>
-          <label for="admin_kgPriceFactor" title="Kg başına fiyat faktörü (USD bazlı).">Kg Başına Fiyat Faktörü ($):</label>
+          <label for="admin_kgPriceFactor">Kg Başına Fiyat Faktörü ($):</label>
           <input type="number" id="admin_kgPriceFactor" step="0.01">
           
-          <!-- ALMG için ek alan -->
-          <label for="admin_almgKgPriceFactor" title="ALMG için Kg başına fiyat faktörü (USD bazlı).">ALMG Kg Başına Fiyat Faktörü ($):</label>
+          <label for="admin_almgKgPriceFactor">ALMG Kg Başına Fiyat Faktörü ($):</label>
           <input type="number" id="admin_almgKgPriceFactor" step="0.01">
           
           <h4>Kesim Türü Faktörleri (Dakika başına $ fiyatı)</h4>
@@ -581,7 +581,7 @@
     </div>
   </div>
   
-  <!-- Fiyat Ayarlama Butonları -->
+  <!-- Fiyat Ayarlama Butonları (En Altta Kalır) -->
   <div id="priceAdjustmentContainer">
     <button onclick="adjustPrice('lazer5')">Lazer Kesim %5 Arttır</button>
     <button onclick="adjustPrice('lazer10')">Lazer Kesim %10 Arttır</button>
@@ -669,7 +669,7 @@
       localStorage.setItem("pricingParameters", JSON.stringify(parameters));
     }
 
-    // Seçenekleri güncelle (hem malzeme hem dual alanlar)
+    // Seçenekleri güncelle (hem lazer kesim hem malzeme)
     function updateSelectOptions() {
       const kesimSelect = document.getElementById("kesim_türü");
       kesimSelect.innerHTML = "";
@@ -694,9 +694,11 @@
           }
         }
       };
+      // Malzeme türü select'lerini doldur
       updateMaterialSelect("malzeme_türü1");
       updateMaterialSelect("malzeme_türü2");
       updateMaterialSelect("malzeme_türü3");
+      // Dual alanlar
       updateMaterialSelect("malzeme_türü1_dual");
       updateMaterialSelect("malzeme_türü2_dual");
       updateMaterialSelect("malzeme_türü3_dual");
@@ -737,7 +739,6 @@
       
       updateOverallTotal();
       
-      // Ortalama fiyat önerisini de altta göster
       let ortalamaFiyat = (kgFiyat * 0.60) + (süreFiyat * 0.40);
       document.getElementById("ortalamaOneri").innerHTML = 
         `Ortalama Fiyat Önerisi: $${ortalamaFiyat.toFixed(2)}. İşin durumuna göre fiyat daha uygun olabilir.`;
@@ -912,7 +913,6 @@
         input.className = "small-input";
         input.value = parameters.kesimFactors[type];
         input.id = "admin_kesim_" + type.replace(/\s/g, "_");
-        input.title = "Dakika başına $ fiyatı";
         cellInput.appendChild(input);
         row.appendChild(cellType);
         row.appendChild(cellInput);
@@ -932,7 +932,6 @@
         input.className = "small-input";
         input.value = parameters.materialPrices[material];
         input.id = "admin_material_" + material.replace(/\s/g, "_");
-        input.title = "Malzeme fiyatı (USD bazlı)";
         cellInput.appendChild(input);
         row.appendChild(cellMaterial);
         row.appendChild(cellInput);
