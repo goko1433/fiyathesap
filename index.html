@@ -49,11 +49,15 @@
     body.dark-theme th {
       background: #1e1e1e;
     }
-    
     /* Sadece dark-theme aktifken label'ları yeşil ve kalın yapalım */
     body.dark-theme label {
-      color: #0f0;         /* Yeşil */
-      font-weight: bold;   /* Kalın */
+      color: #0f0;
+      font-weight: bold;
+    }
+    /* Gece modunda Admin Panel Modal arka planını gri yap */
+    body.dark-theme #adminContent {
+      background: #2c2c2c;
+      color: #e0e0e0;
     }
 
     /* Üst Header */
@@ -85,15 +89,16 @@
     .header-buttons button:hover {
       background: #407ec9;
     }
-    /* Yeşil Admin Panel Butonu */
+    /* Admin Panel Butonu: yazı tamamen yeşil */
     .admin-panel-btn {
       background: #4CAF50;
+      color: green !important;
     }
     .admin-panel-btn:hover {
       background: #43a047;
     }
     
-    /* Yuvarlak Tema Toggle Butonu - Kenarda, küçük ve simgeli */
+    /* Yuvarlak Tema Toggle Butonu */
     .theme-toggle-btn {
       width: 40px;
       height: 40px;
@@ -105,6 +110,40 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    
+    /* Üst kısımda kayan uyarı metni */
+    .scrolling-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    /* Marquee: daha yavaş kaysın, rengi kırmızı */
+    .scrolling-container marquee {
+      font-size: 14px;
+      color: red;
+      background: transparent;
+      border: none;
+      width: 100%;
+      scrollamount: 2;
+    }
+    
+    /* Merkezi Bildirim Stili */
+    #centerNotification {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #4CAF50;
+      color: white;
+      font-size: 20px;
+      padding: 20px 40px;
+      border-radius: 8px;
+      display: none;
+      z-index: 2000;
+      text-align: center;
     }
     
     /* Ana Konteyner */
@@ -121,6 +160,7 @@
       padding: 20px;
       border: 1px solid #ccc;
       border-radius: 6px;
+      position: relative;
     }
     h2 {
       font-size: 28px;
@@ -138,7 +178,7 @@
       display: block;
       margin-top: 15px;
       font-size: 16px;
-      color: #333; /* Aydınlık temada label'lar normal renk kalsın */
+      color: #333;
     }
     input, select {
       width: 100%;
@@ -197,6 +237,28 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       display: none;
+    }
+    /* Dual Malzeme Alanı */
+    .dual-material {
+      border: 1px dashed #ccc;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+    /* Dual Lazer Alanı */
+    .dual-laser {
+      border: 1px dashed #ccc;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    /* Yeni Ortalama Fiyat Önerisi Alanı */
+    #ortalamaOneri {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
+      text-align: center;
     }
     /* Admin Modal */
     #adminModal {
@@ -271,19 +333,24 @@
     /* Mobil Uyumluluk */
     @media (max-width: 768px) {
       .container {
-        flex-direction: column;
-        padding: 10px;
+        flex-direction: row;
+        flex-wrap: wrap;
       }
-      .main-header {
-        flex-direction: column;
-        align-items: stretch;
+      .left, .right {
+        flex: 1 1 50%;
       }
-      .header-buttons {
-        margin-bottom: 10px;
-      }
-      .theme-toggle-btn {
-        align-self: center;
-      }
+    }
+    
+    /* Fiyat Ayarlama Butonları */
+    #priceAdjustmentContainer {
+      text-align: center;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+    #priceAdjustmentContainer button {
+      width: auto;
+      margin: 5px;
+      padding: 10px 20px;
     }
   </style>
 </head>
@@ -294,15 +361,23 @@
       <button onclick="window.open('https://www.tcmb.gov.tr/kurlar/kurlar_tr.html','_blank')">TCMB Kurlar</button>
       <button class="admin-panel-btn" onclick="openAdminModal()">Admin Panel</button>
     </div>
-    <!-- Yuvarlak Tema Toggle Butonu (İkon: Ay/Gün) -->
-    <button class="theme-toggle-btn" onclick="toggleTheme()"></button>
+    <!-- Tema Toggle ve Kayar Uyarı Metni -->
+    <div class="scrolling-container">
+      <button class="theme-toggle-btn" onclick="toggleTheme()"></button>
+      <marquee behavior="scroll" direction="left" scrollamount="6">
+        Çıkan fiyati işin durumuna, yerleşime, malzemenin değerine göre yorumlayıp kontrol edelim 
+      </marquee>
+    </div>
   </header>
-
+  
+  <!-- Merkezi Bildirim -->
+  <div id="centerNotification"></div>
+  
   <!-- Ana Konteyner -->
   <div class="container">
-    <!-- Sol Panel: Otomatik Fiyat Hesaplama -->
+    <!-- Sol Panel: Lazer Kesim Hesaplama -->
     <div class="left">
-      <h2>Otomatik Fiyat Hesaplama</h2>
+      <h2>Lazer Kesim Hesaplama</h2>
       
       <label for="kg" title="Girilen kilogram değeri, toplam kg fiyatını hesaplamak için kullanılır.">Toplam Kg:</label>
       <input type="number" id="kg" placeholder="Kg girin">
@@ -314,6 +389,18 @@
       <select id="kesim_türü">
         <!-- Admin panelden yüklenecek kesim türleri seçenekleri -->
       </select>
+      
+      <!-- Dual Lazer Toggle Butonu -->
+      <button type="button" onclick="toggleDualLaser()">İki Tür Hesapla</button>
+      <!-- Dual Lazer Alanı -->
+      <div id="dualLaser" class="dual-laser">
+        <label for="kesim_türü_dual" title="İkinci kesim türünü seçin.">Kesim Türü 2:</label>
+        <select id="kesim_türü_dual">
+          <!-- Seçenekler toggleDualLaser() ile doldurulacak -->
+        </select>
+        <label for="süre_dual" title="İkinci kesim süresi (dk).">Kesim Süresi 2 (dk):</label>
+        <input type="number" id="süre_dual" placeholder="Süre girin">
+      </div>
       
       <label for="fiber" title="5040 Fiber seçeneği kesim fiyatını etkiler.">5040 Fiber Seçeneği:</label>
       <select id="fiber">
@@ -348,6 +435,8 @@
       
       <div class="result" id="sonuc"></div>
       <div class="result" id="toplamFiyat"></div>
+      <!-- Ortalama Fiyat Önerisi Alanı -->
+      <div class="result" id="ortalamaOneri"></div>
       <div class="comment" id="yorum"></div>
     </div>
     
@@ -356,7 +445,7 @@
       <h2>Malzeme Fiyat Hesaplama</h2>
       <button id="showNextMaterialBtn" onclick="showNextMaterialSection()">Bir sonraki malzeme bölümünü göster</button>
       
-      <!-- Malzeme Hesaplama Bölümleri (her biri başlangıçta gizli) -->
+      <!-- Malzeme Hesaplama Bölümleri 1 -->
       <div id="materialSection1" class="material-section">
         <h3>Malzeme Hesaplama 1</h3>
         <label for="malzeme_türü1" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
@@ -368,9 +457,22 @@
         <label for="malzeme_fiyat1" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
         <input type="number" id="malzeme_fiyat1" value="0">
         <button onclick="malzemeHesapla(1)">Malzeme Fiyatı Hesapla</button>
+        <!-- Dual hesap butonu -->
+        <button type="button" onclick="toggleDualMaterial(1)">İki Tür Hesapla</button>
+        <div id="dualMaterial1" class="dual-material" style="display:none;">
+          <label for="malzeme_türü1_dual" title="İkinci malzeme türünü seçin.">Malzeme Türü 2:</label>
+          <select id="malzeme_türü1_dual" onchange="document.getElementById('malzeme_fiyat1_dual').value=this.value">
+            <!-- Admin panelden yüklenecek malzeme seçenekleri -->
+          </select>
+          <label for="malzeme_kg1_dual" title="İkinci malzemenin kilogram miktarı.">Malzeme Kg 2:</label>
+          <input type="number" id="malzeme_kg1_dual" placeholder="Kg girin">
+          <label for="malzeme_fiyat1_dual" title="İkinci malzeme fiyatı (USD bazlı).">Malzeme Fiyatı 2 ($/kg):</label>
+          <input type="number" id="malzeme_fiyat1_dual" value="0">
+        </div>
         <div class="result" id="malzeme_sonuc1"></div>
       </div>
       
+      <!-- Malzeme Hesaplama Bölümleri 2 -->
       <div id="materialSection2" class="material-section">
         <h3>Malzeme Hesaplama 2</h3>
         <label for="malzeme_türü2" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
@@ -382,9 +484,22 @@
         <label for="malzeme_fiyat2" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
         <input type="number" id="malzeme_fiyat2" value="0">
         <button onclick="malzemeHesapla(2)">Malzeme Fiyatı Hesapla</button>
+        <!-- Dual hesap butonu -->
+        <button type="button" onclick="toggleDualMaterial(2)">İki Tür Hesapla</button>
+        <div id="dualMaterial2" class="dual-material" style="display:none;">
+          <label for="malzeme_türü2_dual" title="İkinci malzeme türünü seçin.">Malzeme Türü 2:</label>
+          <select id="malzeme_türü2_dual" onchange="document.getElementById('malzeme_fiyat2_dual').value=this.value">
+            <!-- Admin panelden yüklenecek malzeme seçenekleri -->
+          </select>
+          <label for="malzeme_kg2_dual" title="İkinci malzemenin kilogram miktarı.">Malzeme Kg 2:</label>
+          <input type="number" id="malzeme_kg2_dual" placeholder="Kg girin">
+          <label for="malzeme_fiyat2_dual" title="İkinci malzeme fiyatı (USD bazlı).">Malzeme Fiyatı 2 ($/kg):</label>
+          <input type="number" id="malzeme_fiyat2_dual" value="0">
+        </div>
         <div class="result" id="malzeme_sonuc2"></div>
       </div>
       
+      <!-- Malzeme Hesaplama Bölümleri 3 -->
       <div id="materialSection3" class="material-section">
         <h3>Malzeme Hesaplama 3</h3>
         <label for="malzeme_türü3" title="Malzemenin türünü seçin.">Malzeme Türü:</label>
@@ -396,6 +511,18 @@
         <label for="malzeme_fiyat3" title="Malzeme fiyatı (USD bazlı).">Malzeme Fiyatı ($/kg):</label>
         <input type="number" id="malzeme_fiyat3" value="0">
         <button onclick="malzemeHesapla(3)">Malzeme Fiyatı Hesapla</button>
+        <!-- Dual hesap butonu -->
+        <button type="button" onclick="toggleDualMaterial(3)">İki Tür Hesapla</button>
+        <div id="dualMaterial3" class="dual-material" style="display:none;">
+          <label for="malzeme_türü3_dual" title="İkinci malzeme türünü seçin.">Malzeme Türü 2:</label>
+          <select id="malzeme_türü3_dual" onchange="document.getElementById('malzeme_fiyat3_dual').value=this.value">
+            <!-- Admin panelden yüklenecek malzeme seçenekleri -->
+          </select>
+          <label for="malzeme_kg3_dual" title="İkinci malzemenin kilogram miktarı.">Malzeme Kg 2:</label>
+          <input type="number" id="malzeme_kg3_dual" placeholder="Kg girin">
+          <label for="malzeme_fiyat3_dual" title="İkinci malzeme fiyatı (USD bazlı).">Malzeme Fiyatı 2 ($/kg):</label>
+          <input type="number" id="malzeme_fiyat3_dual" value="0">
+        </div>
         <div class="result" id="malzeme_sonuc3"></div>
       </div>
     </div>
@@ -454,7 +581,24 @@
     </div>
   </div>
   
+  <!-- Fiyat Ayarlama Butonları -->
+  <div id="priceAdjustmentContainer">
+    <button onclick="adjustPrice('lazer5')">Lazer Kesim %5 Arttır</button>
+    <button onclick="adjustPrice('lazer10')">Lazer Kesim %10 Arttır</button>
+    <button onclick="adjustPrice('malzeme1')">Malzeme %1 Arttır</button>
+  </div>
+  
   <script>
+    // Merkezi Bildirim Fonksiyonu (Süre 4000 ms)
+    function showCenterNotification(message) {
+      var notif = document.getElementById("centerNotification");
+      notif.innerHTML = message;
+      notif.style.display = "block";
+      setTimeout(function() {
+        notif.style.display = "none";
+      }, 4000);
+    }
+  
     // Çoklu para birimi desteği
     const currencyRates = {
       'USD': 1,
@@ -500,17 +644,17 @@
       }
     };
 
-    // Global parametre nesnesi (localStorage'dan yüklenecek veya varsayılanlar kullanılacak)
+    // Global parametre nesnesi
     let parameters = {};
 
-    // Global base price ve malzeme hesaplamaları için toplamlar
+    // Global base price ve malzeme toplamları
     let basePrice = 0;
     let materialTotals = {1: 0, 2: 0, 3: 0};
 
-    // Malzeme bölümlerinin kaç tanesinin görünür olduğunu tutan sayaç
+    // Görünen malzeme bölümlerinin sayısı
     let visibleMaterialSections = 0;
 
-    // LocalStorage’dan parametreleri yükle; yoksa varsayılanları kullan
+    // Parametreleri yükle
     function loadParameters() {
       const stored = localStorage.getItem("pricingParameters");
       if (stored) {
@@ -520,14 +664,13 @@
       }
     }
 
-    // Parametreleri localStorage’a kaydet
+    // Parametreleri kaydet
     function saveParameters() {
       localStorage.setItem("pricingParameters", JSON.stringify(parameters));
     }
 
-    // Sol paneldeki "kesim_türü" ve sağ paneldeki "malzeme_türü" seçeneklerini güncelle
+    // Seçenekleri güncelle (hem malzeme hem dual alanlar)
     function updateSelectOptions() {
-      // Kesim türleri
       const kesimSelect = document.getElementById("kesim_türü");
       kesimSelect.innerHTML = "";
       for (let type in parameters.kesimFactors) {
@@ -536,27 +679,30 @@
         opt.innerText = type;
         kesimSelect.appendChild(opt);
       }
-      // Fiber ve yerleşim dropdown varsayılanları
       document.getElementById("fiber").value = parameters.fiberDefault;
       document.getElementById("yerlesim").value = parameters.yerlesimDefault;
       
-      // Malzeme türleri için (her 3 bölüm için)
       const updateMaterialSelect = (selectId) => {
         const materialSelect = document.getElementById(selectId);
-        materialSelect.innerHTML = "";
-        for (let material in parameters.materialPrices) {
-          let opt = document.createElement("option");
-          opt.value = parameters.materialPrices[material];
-          opt.innerText = material;
-          materialSelect.appendChild(opt);
+        if(materialSelect) {
+          materialSelect.innerHTML = "";
+          for (let material in parameters.materialPrices) {
+            let opt = document.createElement("option");
+            opt.value = parameters.materialPrices[material];
+            opt.innerText = material;
+            materialSelect.appendChild(opt);
+          }
         }
       };
       updateMaterialSelect("malzeme_türü1");
       updateMaterialSelect("malzeme_türü2");
       updateMaterialSelect("malzeme_türü3");
+      updateMaterialSelect("malzeme_türü1_dual");
+      updateMaterialSelect("malzeme_türü2_dual");
+      updateMaterialSelect("malzeme_türü3_dual");
     }
 
-    // Hesaplama Fonksiyonları
+    // Lazer Kesim Hesaplama Fonksiyonu
     function hesapla() {
       let kg = parseFloat(document.getElementById("kg").value) || 0;
       let süre = parseFloat(document.getElementById("süre").value) || 0;
@@ -564,26 +710,40 @@
       let fiberCarpan = parseFloat(document.getElementById("fiber").value);
       let yerlesimCarpan = parseFloat(document.getElementById("yerlesim").value);
 
-      // Seçilen kesim türünün adını alalım
       let kesimSelect = document.getElementById("kesim_türü");
       let kesimType = kesimSelect.options[kesimSelect.selectedIndex].text;
 
-      // Eğer ALMG Kesim seçilmişse, farklı kg fiyat faktörü uygula
       let kgPriceFactor = parameters.kgPriceFactor;
       if (kesimType === "ALMG Kesim") {
         kgPriceFactor = parameters.almgKgPriceFactor;
       }
-
       let kgFiyat = kg * kgPriceFactor;
       let süreFiyat = süre * kesimFaktor * fiberCarpan;
-      let maxFiyat = (kgFiyat > süreFiyat ? kgFiyat : süreFiyat);
-      maxFiyat = maxFiyat * yerlesimCarpan; // Yerleşim artışı uygulanıyor
-      let ortalamaFiyat = (kgFiyat * 0.60) + (süreFiyat * 0.40);
-      basePrice = maxFiyat; // global base price
       
-      document.getElementById("yorum").innerHTML = `Kg fiyatı: $${kgFiyat.toFixed(2)}, Süre fiyatı: $${süreFiyat.toFixed(2)}<br>Ortalama: $${ortalamaFiyat.toFixed(2)}`;
-      document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br>Süre Fiyatı: $${süreFiyat.toFixed(2)}`;
+      let primaryCost = (kgFiyat > süreFiyat ? kgFiyat : süreFiyat);
+      let dualCost = 0;
+      let dualDiv = document.getElementById("dualLaser");
+      if(dualDiv && dualDiv.style.display !== "none") {
+        let dualSüre = parseFloat(document.getElementById("süre_dual").value) || 0;
+        let dualKesimFaktor = parseFloat(document.getElementById("kesim_türü_dual").value);
+        let dualSüreFiyat = dualSüre * dualKesimFaktor * fiberCarpan;
+        dualCost = dualSüreFiyat;
+        document.getElementById("sonuc").innerHTML = 
+          `Kesim Fiyatı 1: $${primaryCost.toFixed(2)}<br>Kesim Fiyatı 2: $${dualCost.toFixed(2)}<br>Toplam Lazer Fiyatı: $${((primaryCost + dualCost) * yerlesimCarpan).toFixed(2)}`;
+      } else {
+        document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br>Süre Fiyatı: $${süreFiyat.toFixed(2)}`;
+      }
+      basePrice = (primaryCost + dualCost) * yerlesimCarpan;
+      
       updateOverallTotal();
+      
+      // Ortalama fiyat önerisini de altta göster
+      let ortalamaFiyat = (kgFiyat * 0.60) + (süreFiyat * 0.40);
+      document.getElementById("ortalamaOneri").innerHTML = 
+        `Ortalama Fiyat Önerisi: $${ortalamaFiyat.toFixed(2)}. İşin durumuna göre fiyat daha uygun olabilir.`;
+      
+      let commentary = `Ortalama fiyat: $${ortalamaFiyat.toFixed(2)}. İşin durumuna göre bu fiyat her zaman uygulanmayabilir; detaylı kontrol önerilir.`;
+      showCenterNotification(commentary);
     }
 
     function updateOverallTotal() {
@@ -597,14 +757,51 @@
       document.getElementById("toplamFiyat").innerHTML = `<strong>En Yüksek Fiyat: ${symbol}${convertedBase.toFixed(2)}</strong><br><strong class="green">Toplam (Malzeme Dahil): ${symbol}${convertedOverall.toFixed(2)}</strong>`;
     }
 
+    // Malzeme Hesaplama (Dual Mantık Dahil)
     function malzemeHesapla(index) {
       let kg = parseFloat(document.getElementById("malzeme_kg" + index).value) || 0;
       let enteredPrice = parseFloat(document.getElementById("malzeme_fiyat" + index).value);
       let selectedPrice = parseFloat(document.getElementById("malzeme_türü" + index).value);
       let price = (enteredPrice === 0 ? selectedPrice : enteredPrice);
       let total = kg * price;
-      materialTotals[index] = total;
-      document.getElementById("malzeme_sonuc" + index).innerHTML = `Malzeme Fiyatı: $${total.toFixed(2)}`;
+      
+      let dualDiv = document.getElementById("dualMaterial" + index);
+      let combinedTotal = total;
+      if(dualDiv && dualDiv.style.display !== "none") {
+        let kg_dual = parseFloat(document.getElementById("malzeme_kg" + index + "_dual").value) || 0;
+        let enteredPrice_dual = parseFloat(document.getElementById("malzeme_fiyat" + index + "_dual").value);
+        let selectedPrice_dual = parseFloat(document.getElementById("malzeme_türü" + index + "_dual").value);
+        let price_dual = (enteredPrice_dual === 0 ? selectedPrice_dual : enteredPrice_dual);
+        let total_dual = kg_dual * price_dual;
+        combinedTotal = total + total_dual;
+        document.getElementById("malzeme_sonuc" + index).innerHTML = 
+          `Malzeme Fiyatı: <br>Birincisi: $${total.toFixed(2)}<br>İkincisi: $${total_dual.toFixed(2)}<br>Toplam: $${combinedTotal.toFixed(2)}`;
+      } else {
+        document.getElementById("malzeme_sonuc" + index).innerHTML = `Malzeme Fiyatı: $${total.toFixed(2)}`;
+      }
+      
+      materialTotals[index] = combinedTotal;
+      updateOverallTotal();
+      
+      showCenterNotification("Malzeme Fiyatı Hesaplandı");
+    }
+
+    function adjustPrice(option) {
+      if(option === 'lazer5'){
+        basePrice *= 1.05;
+        showCenterNotification("Lazer Kesim Fiyatı %5 Arttırıldı");
+      } else if(option === 'lazer10'){
+        basePrice *= 1.10;
+        showCenterNotification("Lazer Kesim Fiyatı %10 Arttırıldı");
+      } else if(option === 'malzeme1'){
+        for(let i = 1; i <= 3; i++){
+           materialTotals[i] *= 1.01;
+           if(document.getElementById("malzeme_sonuc"+i).innerHTML) {
+               document.getElementById("malzeme_sonuc"+i).innerHTML = "Malzeme Fiyatı: $" + materialTotals[i].toFixed(2);
+           }
+        }
+        showCenterNotification("Malzeme Fiyatı %1 Arttırıldı");
+      }
       updateOverallTotal();
     }
 
@@ -613,17 +810,22 @@
       document.getElementById("süre").value = "";
       document.getElementById("sonuc").innerHTML = "";
       document.getElementById("toplamFiyat").innerHTML = "";
+      document.getElementById("ortalamaOneri").innerHTML = "";
       document.getElementById("yorum").innerHTML = "";
       for(let i = 1; i <= 3; i++) {
         document.getElementById("malzeme_kg" + i).value = "";
         document.getElementById("malzeme_fiyat" + i).value = "";
         document.getElementById("malzeme_sonuc" + i).innerHTML = "";
+        let dualDiv = document.getElementById("dualMaterial" + i);
+        if(dualDiv) {
+          document.getElementById("malzeme_kg" + i + "_dual").value = "";
+          document.getElementById("malzeme_fiyat" + i + "_dual").value = "";
+        }
       }
       basePrice = 0;
       materialTotals = {1: 0, 2: 0, 3: 0};
     }
 
-    // Malzeme bölümlerini sırayla açan fonksiyon
     function showNextMaterialSection() {
       if (visibleMaterialSections < 3) {
         visibleMaterialSections++;
@@ -632,6 +834,42 @@
           document.getElementById("showNextMaterialBtn").disabled = true;
           document.getElementById("showNextMaterialBtn").innerText = "Tüm bölümler gösterildi";
         }
+      }
+    }
+
+    // Dual alanı göster/gizle (Malzeme)
+    function toggleDualMaterial(index) {
+      var dualDiv = document.getElementById("dualMaterial" + index);
+      if(dualDiv.style.display === "none" || dualDiv.style.display === "") {
+        dualDiv.style.display = "block";
+        var dualSelect = document.getElementById("malzeme_türü" + index + "_dual");
+        dualSelect.innerHTML = "";
+        for(let material in parameters.materialPrices) {
+          let opt = document.createElement("option");
+          opt.value = parameters.materialPrices[material];
+          opt.innerText = material;
+          dualSelect.appendChild(opt);
+        }
+      } else {
+        dualDiv.style.display = "none";
+      }
+    }
+
+    // Dual alanı göster/gizle (Lazer Kesim)
+    function toggleDualLaser() {
+      var dualDiv = document.getElementById("dualLaser");
+      if(dualDiv.style.display === "none" || dualDiv.style.display === "") {
+        dualDiv.style.display = "block";
+        var dualSelect = document.getElementById("kesim_türü_dual");
+        dualSelect.innerHTML = "";
+        for(let type in parameters.kesimFactors) {
+          let opt = document.createElement("option");
+          opt.value = parameters.kesimFactors[type];
+          opt.innerText = type;
+          dualSelect.appendChild(opt);
+        }
+      } else {
+        dualDiv.style.display = "none";
       }
     }
 
@@ -724,13 +962,13 @@
       setTimeout(() => { savedMsg.style.display = "none"; }, 2000);
     }
 
-    // Tema Toggle Fonksiyonu ve İkon Güncellemesi
+    // Tema Toggle Fonksiyonu
     function updateThemeIcon() {
       const btn = document.querySelector(".theme-toggle-btn");
       if(document.body.classList.contains("dark-theme")){
-         btn.innerHTML = "☀️"; // Aydınlık moda geçmek için güneş ikonu
+         btn.innerHTML = "☀️";
       } else {
-         btn.innerHTML = "🌙"; // Koyu mod için ay ikonu
+         btn.innerHTML = "🌙";
       }
     }
 
@@ -744,7 +982,7 @@
       updateThemeIcon();
     }
 
-    // Sayfa yüklenince tema bilgisini kontrol et
+    // Sayfa yüklendiğinde
     window.onload = function() {
       loadParameters();
       updateSelectOptions();
@@ -753,10 +991,8 @@
         document.body.classList.add("dark-theme");
       }
       updateThemeIcon();
+      document.getElementById("currencySelect").addEventListener("change", updateOverallTotal);
     }
-
-    // Para birimi seçimi değişince hesaplamayı güncelle
-    document.getElementById("currencySelect").addEventListener("change", updateOverallTotal);
   </script>
 </body>
 </html>
