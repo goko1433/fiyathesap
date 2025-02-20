@@ -332,6 +332,28 @@
     
     /* Mobil Uyumluluk: Solda lazer, sağda malzeme, sarmasın => yan yana */
     @media (max-width: 768px) {
+      /* Daha küçük fontlar */
+      body {
+        font-size: 14px;  /* Genel gövdeyi biraz küçültüyoruz */
+      }
+      .header-buttons button,
+      .theme-toggle-btn,
+      label,
+      input,
+      select,
+      button,
+      .comment,
+      .result,
+      .scrolling-container marquee {
+        font-size: 14px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+      h3 {
+        font-size: 18px;
+      }
+
       .container {
         flex-direction: row;
         flex-wrap: nowrap; /* Yan yana kalmasını sağla, gerekirse yatay kaydırma olur */
@@ -533,7 +555,7 @@
   <div id="adminModal">
     <div id="adminContent">
       <div id="adminLoginSection">
-        <label for="adminPass" title="Admin paneline erişmek için şifre girin.">Şifre:</label>
+        <label for="adminPass">Şifre:</label>
         <input type="password" id="adminPass" placeholder="Şifre girin">
         <button onclick="checkAdmin()" style="color: orange;">Giriş</button>
       </div>
