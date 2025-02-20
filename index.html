@@ -12,7 +12,50 @@
       background: #f0f2f5;
       font-family: Arial, sans-serif;
       color: #333;
+      transition: background 0.3s, color 0.3s;
     }
+    /* Koyu Tema Stil - Okunabilirlik için optimize edildi */
+    body.dark-theme {
+      background: #121212;
+      color: #e0e0e0;
+    }
+    body.dark-theme .main-header {
+      background: #1e1e1e;
+      border-bottom: 1px solid #333;
+    }
+    body.dark-theme .container {
+      background: #1e1e1e;
+      border: 1px solid #333;
+    }
+    body.dark-theme input,
+    body.dark-theme select {
+      background: #2c2c2c;
+      color: #e0e0e0;
+      border: 1px solid #444;
+    }
+    body.dark-theme button {
+      background: #3a3a3a;
+      color: #e0e0e0;
+    }
+    body.dark-theme .close-btn {
+      background: #444;
+      color: #e0e0e0;
+    }
+    body.dark-theme table,
+    body.dark-theme th,
+    body.dark-theme td {
+      border: 1px solid #444;
+    }
+    body.dark-theme th {
+      background: #1e1e1e;
+    }
+    
+    /* Sadece dark-theme aktifken label'ları yeşil ve kalın yapalım */
+    body.dark-theme label {
+      color: #0f0;         /* Yeşil */
+      font-weight: bold;   /* Kalın */
+    }
+
     /* Üst Header */
     .main-header {
       background: #e1e8ed;
@@ -21,8 +64,16 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #ccc;
+      flex-wrap: wrap;
     }
-    .main-header button {
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .header-buttons button {
       background: #4a90e2;
       border: none;
       padding: 10px 15px;
@@ -31,9 +82,31 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .main-header button:hover {
+    .header-buttons button:hover {
       background: #407ec9;
     }
+    /* Yeşil Admin Panel Butonu */
+    .admin-panel-btn {
+      background: #4CAF50;
+    }
+    .admin-panel-btn:hover {
+      background: #43a047;
+    }
+    
+    /* Yuvarlak Tema Toggle Butonu - Kenarda, küçük ve simgeli */
+    .theme-toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
     /* Ana Konteyner */
     .container {
       display: flex;
@@ -65,6 +138,7 @@
       display: block;
       margin-top: 15px;
       font-size: 16px;
+      color: #333; /* Aydınlık temada label'lar normal renk kalsın */
     }
     input, select {
       width: 100%;
@@ -193,13 +267,35 @@
       text-align: center;
       margin-top: 10px;
     }
+    
+    /* Mobil Uyumluluk */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        padding: 10px;
+      }
+      .main-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .header-buttons {
+        margin-bottom: 10px;
+      }
+      .theme-toggle-btn {
+        align-self: center;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Üst Header -->
   <header class="main-header">
-    <button onclick="window.open('https://www.tcmb.gov.tr/kurlar/kurlar_tr.html','_blank')">TCMB Kurlar</button>
-    <button onclick="openAdminModal()">Admin Panel</button>
+    <div class="header-buttons">
+      <button onclick="window.open('https://www.tcmb.gov.tr/kurlar/kurlar_tr.html','_blank')">TCMB Kurlar</button>
+      <button class="admin-panel-btn" onclick="openAdminModal()">Admin Panel</button>
+    </div>
+    <!-- Yuvarlak Tema Toggle Butonu (İkon: Ay/Gün) -->
+    <button class="theme-toggle-btn" onclick="toggleTheme()"></button>
   </header>
 
   <!-- Ana Konteyner -->
@@ -319,6 +415,11 @@
           <h3>Genel Fiyat Parametreleri</h3>
           <label for="admin_kgPriceFactor" title="Kg başına fiyat faktörü (USD bazlı).">Kg Başına Fiyat Faktörü ($):</label>
           <input type="number" id="admin_kgPriceFactor" step="0.01">
+          
+          <!-- ALMG için ek alan -->
+          <label for="admin_almgKgPriceFactor" title="ALMG için Kg başına fiyat faktörü (USD bazlı).">ALMG Kg Başına Fiyat Faktörü ($):</label>
+          <input type="number" id="admin_almgKgPriceFactor" step="0.01">
+          
           <h4>Kesim Türü Faktörleri (Dakika başına $ fiyatı)</h4>
           <table id="adminKesimTable">
             <thead>
@@ -349,7 +450,6 @@
         <button onclick="saveAdminSettings()">Kaydet</button>
         <p class="saved-message" id="savedMessage">Fiyatlar kaydedildi!</p>
       </div>
-      <!-- Kapat Butonunu en alta aldık -->
       <button class="close-btn" onclick="closeAdminModal()">Kapat</button>
     </div>
   </div>
@@ -370,10 +470,15 @@
     // Varsayılan parametreler
     const defaultParameters = {
       kgPriceFactor: 0.36,
+      almgKgPriceFactor: 0.30,
+      // Kesim türü faktörleri (dakika başına fiyat)
       kesimFactors: {
         'Paslanmaz Çelik': 2.0,
         'Siyah Saç': 1.75,
-        'ALMG Kesim': 2.0
+        'ALMG Kesim': 2.0,
+        'Bakır': 2.3,
+        'Pirinç': 2.0,
+        'Galvaniz': 1.5
       },
       fiberDefault: 4,
       yerlesimDefault: 1,
@@ -431,7 +536,7 @@
         opt.innerText = type;
         kesimSelect.appendChild(opt);
       }
-      // Fiber ve yerleşim dropdown varsayılanları (değiştirilemesin)
+      // Fiber ve yerleşim dropdown varsayılanları
       document.getElementById("fiber").value = parameters.fiberDefault;
       document.getElementById("yerlesim").value = parameters.yerlesimDefault;
       
@@ -458,7 +563,18 @@
       let kesimFaktor = parseFloat(document.getElementById("kesim_türü").value);
       let fiberCarpan = parseFloat(document.getElementById("fiber").value);
       let yerlesimCarpan = parseFloat(document.getElementById("yerlesim").value);
-      let kgFiyat = kg * parameters.kgPriceFactor;
+
+      // Seçilen kesim türünün adını alalım
+      let kesimSelect = document.getElementById("kesim_türü");
+      let kesimType = kesimSelect.options[kesimSelect.selectedIndex].text;
+
+      // Eğer ALMG Kesim seçilmişse, farklı kg fiyat faktörü uygula
+      let kgPriceFactor = parameters.kgPriceFactor;
+      if (kesimType === "ALMG Kesim") {
+        kgPriceFactor = parameters.almgKgPriceFactor;
+      }
+
+      let kgFiyat = kg * kgPriceFactor;
       let süreFiyat = süre * kesimFaktor * fiberCarpan;
       let maxFiyat = (kgFiyat > süreFiyat ? kgFiyat : süreFiyat);
       maxFiyat = maxFiyat * yerlesimCarpan; // Yerleşim artışı uygulanıyor
@@ -544,6 +660,7 @@
 
     function loadAdminSettings() {
       document.getElementById("admin_kgPriceFactor").value = parameters.kgPriceFactor;
+      document.getElementById("admin_almgKgPriceFactor").value = parameters.almgKgPriceFactor;
       const kesimTableBody = document.querySelector("#adminKesimTable tbody");
       kesimTableBody.innerHTML = "";
       for (let type in parameters.kesimFactors) {
@@ -587,6 +704,7 @@
 
     function saveAdminSettings() {
       parameters.kgPriceFactor = parseFloat(document.getElementById("admin_kgPriceFactor").value) || parameters.kgPriceFactor;
+      parameters.almgKgPriceFactor = parseFloat(document.getElementById("admin_almgKgPriceFactor").value) || parameters.almgKgPriceFactor;
       for (let type in parameters.kesimFactors) {
         let inputVal = parseFloat(document.getElementById("admin_kesim_" + type.replace(/\s/g, "_")).value);
         if(!isNaN(inputVal)) {
@@ -606,13 +724,39 @@
       setTimeout(() => { savedMsg.style.display = "none"; }, 2000);
     }
 
-    // Para birimi seçimi değiştiğinde hesaplamayı güncelle
-    document.getElementById("currencySelect").addEventListener("change", updateOverallTotal);
+    // Tema Toggle Fonksiyonu ve İkon Güncellemesi
+    function updateThemeIcon() {
+      const btn = document.querySelector(".theme-toggle-btn");
+      if(document.body.classList.contains("dark-theme")){
+         btn.innerHTML = "☀️"; // Aydınlık moda geçmek için güneş ikonu
+      } else {
+         btn.innerHTML = "🌙"; // Koyu mod için ay ikonu
+      }
+    }
 
+    function toggleTheme() {
+      document.body.classList.toggle("dark-theme");
+      if(document.body.classList.contains("dark-theme")){
+        localStorage.setItem("theme", "dark");
+      } else {
+        localStorage.setItem("theme", "light");
+      }
+      updateThemeIcon();
+    }
+
+    // Sayfa yüklenince tema bilgisini kontrol et
     window.onload = function() {
       loadParameters();
       updateSelectOptions();
+      const savedTheme = localStorage.getItem("theme");
+      if(savedTheme === "dark") {
+        document.body.classList.add("dark-theme");
+      }
+      updateThemeIcon();
     }
+
+    // Para birimi seçimi değişince hesaplamayı güncelle
+    document.getElementById("currencySelect").addEventListener("change", updateOverallTotal);
   </script>
 </body>
 </html>
