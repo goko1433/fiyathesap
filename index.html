@@ -332,9 +332,8 @@
     
     /* Mobil Uyumluluk: Solda lazer, sağda malzeme, sarmasın => yan yana */
     @media (max-width: 768px) {
-      /* Daha küçük fontlar */
       body {
-        font-size: 14px;  /* Genel gövdeyi biraz küçültüyoruz */
+        font-size: 14px;
       }
       .header-buttons button,
       .theme-toggle-btn,
@@ -353,14 +352,13 @@
       h3 {
         font-size: 18px;
       }
-
       .container {
         flex-direction: row;
-        flex-wrap: nowrap; /* Yan yana kalmasını sağla, gerekirse yatay kaydırma olur */
-        overflow-x: auto;  /* Mobilde dar ekranda yatay kaydırma */
+        flex-wrap: nowrap;
+        overflow-x: auto;
       }
       .left, .right {
-        flex: 0 0 50%;     /* İkisi de %50 yer kaplasın */
+        flex: 0 0 50%;
         box-sizing: border-box;
       }
     }
@@ -385,7 +383,6 @@
       <button onclick="window.open('https://www.tcmb.gov.tr/kurlar/kurlar_tr.html','_blank')">TCMB Kurlar</button>
       <button class="admin-panel-btn" onclick="openAdminModal()">Admin Panel</button>
     </div>
-    <!-- Tema Toggle ve Kayar Uyarı Metni -->
     <div class="scrolling-container">
       <button class="theme-toggle-btn" onclick="toggleTheme()"></button>
       <marquee behavior="scroll" direction="left" scrollamount="2">
@@ -637,7 +634,6 @@
     const defaultParameters = {
       kgPriceFactor: 0.36,
       almgKgPriceFactor: 0.30,
-      // Kesim türü faktörleri (dakika başına fiyat)
       kesimFactors: {
         'Paslanmaz Çelik': 2.0,
         'Siyah Saç': 1.75,
@@ -666,17 +662,11 @@
       }
     };
 
-    // Global parametre nesnesi
     let parameters = {};
-
-    // Global base price ve malzeme toplamları
     let basePrice = 0;
     let materialTotals = {1: 0, 2: 0, 3: 0};
-
-    // Görünen malzeme bölümlerinin sayısı
     let visibleMaterialSections = 0;
 
-    // Parametreleri yükle
     function loadParameters() {
       const stored = localStorage.getItem("pricingParameters");
       if (stored) {
@@ -686,12 +676,10 @@
       }
     }
 
-    // Parametreleri kaydet
     function saveParameters() {
       localStorage.setItem("pricingParameters", JSON.stringify(parameters));
     }
 
-    // Seçenekleri güncelle (hem lazer kesim hem malzeme)
     function updateSelectOptions() {
       const kesimSelect = document.getElementById("kesim_türü");
       kesimSelect.innerHTML = "";
@@ -716,11 +704,9 @@
           }
         }
       };
-      // Malzeme türü select'lerini doldur
       updateMaterialSelect("malzeme_türü1");
       updateMaterialSelect("malzeme_türü2");
       updateMaterialSelect("malzeme_türü3");
-      // Dual alanlar
       updateMaterialSelect("malzeme_türü1_dual");
       updateMaterialSelect("malzeme_türü2_dual");
       updateMaterialSelect("malzeme_türü3_dual");
@@ -747,18 +733,23 @@
       let primaryCost = (kgFiyat > süreFiyat ? kgFiyat : süreFiyat);
       let dualCost = 0;
       let dualDiv = document.getElementById("dualLaser");
-      if(dualDiv && dualDiv.style.display !== "none") {
+
+      if (dualDiv && dualDiv.style.display !== "none") {
         let dualSüre = parseFloat(document.getElementById("süre_dual").value) || 0;
         let dualKesimFaktor = parseFloat(document.getElementById("kesim_türü_dual").value);
         let dualSüreFiyat = dualSüre * dualKesimFaktor * fiberCarpan;
-        dualCost = dualSüreFiyat;
-        document.getElementById("sonuc").innerHTML = 
-          `Kesim Fiyatı 1: $${primaryCost.toFixed(2)}<br>Kesim Fiyatı 2: $${dualCost.toFixed(2)}<br>Toplam Lazer Fiyatı: $${((primaryCost + dualCost) * yerlesimCarpan).toFixed(2)}`;
+        dualCost = isNaN(dualSüreFiyat) ? 0 : dualSüreFiyat;
+
+        if (dualCost > 0) {
+          document.getElementById("sonuc").innerHTML = 
+            `Kesim Fiyatı 1: $${primaryCost.toFixed(2)}<br>Kesim Fiyatı 2: $${dualCost.toFixed(2)}<br>Toplam Lazer Fiyatı: $${((primaryCost + dualCost) * yerlesimCarpan).toFixed(2)}`;
+        } else {
+          document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br>Süre Fiyatı: $${süreFiyat.toFixed(2)}`;
+        }
       } else {
         document.getElementById("sonuc").innerHTML = `Kg Fiyatı: $${kgFiyat.toFixed(2)}<br>Süre Fiyatı: $${süreFiyat.toFixed(2)}`;
       }
       basePrice = (primaryCost + dualCost) * yerlesimCarpan;
-      
       updateOverallTotal();
       
       let ortalamaFiyat = (kgFiyat * 0.60) + (süreFiyat * 0.40);
@@ -769,6 +760,7 @@
       showCenterNotification(commentary);
     }
 
+    // Toplam Fiyat Hesaplaması (Malzeme Dahil kısmı)
     function updateOverallTotal() {
       let totalMaterials = materialTotals[1] + materialTotals[2] + materialTotals[3];
       let overall = basePrice + totalMaterials;
@@ -777,7 +769,12 @@
       const symbol = currencySymbols[currency] || '$';
       let convertedBase = basePrice * rate;
       let convertedOverall = overall * rate;
-      document.getElementById("toplamFiyat").innerHTML = `<strong>En Yüksek Fiyat: ${symbol}${convertedBase.toFixed(2)}</strong><br><strong class="green">Toplam (Malzeme Dahil): ${symbol}${convertedOverall.toFixed(2)}</strong>`;
+      let resultText = `<strong>En Yüksek Fiyat: ${symbol}${convertedBase.toFixed(2)}</strong>`;
+      
+      if (totalMaterials > 0) {
+        resultText += `<br><strong class="green">Toplam (Malzeme Dahil): ${symbol}${convertedOverall.toFixed(2)}</strong>`;
+      }
+      document.getElementById("toplamFiyat").innerHTML = resultText;
     }
 
     // Malzeme Hesaplama (Dual Mantık Dahil)
@@ -790,7 +787,7 @@
       
       let dualDiv = document.getElementById("dualMaterial" + index);
       let combinedTotal = total;
-      if(dualDiv && dualDiv.style.display !== "none") {
+      if (dualDiv && dualDiv.style.display !== "none") {
         let kg_dual = parseFloat(document.getElementById("malzeme_kg" + index + "_dual").value) || 0;
         let enteredPrice_dual = parseFloat(document.getElementById("malzeme_fiyat" + index + "_dual").value);
         let selectedPrice_dual = parseFloat(document.getElementById("malzeme_türü" + index + "_dual").value);
@@ -810,18 +807,18 @@
     }
 
     function adjustPrice(option) {
-      if(option === 'lazer5'){
+      if (option === 'lazer5') {
         basePrice *= 1.05;
         showCenterNotification("Lazer Kesim Fiyatı %5 Arttırıldı");
-      } else if(option === 'lazer10'){
+      } else if (option === 'lazer10') {
         basePrice *= 1.10;
         showCenterNotification("Lazer Kesim Fiyatı %10 Arttırıldı");
-      } else if(option === 'malzeme1'){
-        for(let i = 1; i <= 3; i++){
-           materialTotals[i] *= 1.01;
-           if(document.getElementById("malzeme_sonuc"+i).innerHTML) {
-               document.getElementById("malzeme_sonuc"+i).innerHTML = "Malzeme Fiyatı: $" + materialTotals[i].toFixed(2);
-           }
+      } else if (option === 'malzeme1') {
+        for (let i = 1; i <= 3; i++) {
+          materialTotals[i] *= 1.01;
+          if (document.getElementById("malzeme_sonuc" + i).innerHTML) {
+            document.getElementById("malzeme_sonuc" + i).innerHTML = "Malzeme Fiyatı: $" + materialTotals[i].toFixed(2);
+          }
         }
         showCenterNotification("Malzeme Fiyatı %1 Arttırıldı");
       }
@@ -835,12 +832,12 @@
       document.getElementById("toplamFiyat").innerHTML = "";
       document.getElementById("ortalamaOneri").innerHTML = "";
       document.getElementById("yorum").innerHTML = "";
-      for(let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 3; i++) {
         document.getElementById("malzeme_kg" + i).value = "";
         document.getElementById("malzeme_fiyat" + i).value = "";
         document.getElementById("malzeme_sonuc" + i).innerHTML = "";
         let dualDiv = document.getElementById("dualMaterial" + i);
-        if(dualDiv) {
+        if (dualDiv) {
           document.getElementById("malzeme_kg" + i + "_dual").value = "";
           document.getElementById("malzeme_fiyat" + i + "_dual").value = "";
         }
@@ -860,14 +857,13 @@
       }
     }
 
-    // Dual alanı göster/gizle (Malzeme)
     function toggleDualMaterial(index) {
       var dualDiv = document.getElementById("dualMaterial" + index);
-      if(dualDiv.style.display === "none" || dualDiv.style.display === "") {
+      if (dualDiv.style.display === "none" || dualDiv.style.display === "") {
         dualDiv.style.display = "block";
         var dualSelect = document.getElementById("malzeme_türü" + index + "_dual");
         dualSelect.innerHTML = "";
-        for(let material in parameters.materialPrices) {
+        for (let material in parameters.materialPrices) {
           let opt = document.createElement("option");
           opt.value = parameters.materialPrices[material];
           opt.innerText = material;
@@ -878,14 +874,13 @@
       }
     }
 
-    // Dual alanı göster/gizle (Lazer Kesim)
     function toggleDualLaser() {
       var dualDiv = document.getElementById("dualLaser");
-      if(dualDiv.style.display === "none" || dualDiv.style.display === "") {
+      if (dualDiv.style.display === "none" || dualDiv.style.display === "") {
         dualDiv.style.display = "block";
         var dualSelect = document.getElementById("kesim_türü_dual");
         dualSelect.innerHTML = "";
-        for(let type in parameters.kesimFactors) {
+        for (let type in parameters.kesimFactors) {
           let opt = document.createElement("option");
           opt.value = parameters.kesimFactors[type];
           opt.innerText = type;
@@ -896,7 +891,6 @@
       }
     }
 
-    // Admin Panel Fonksiyonları
     function openAdminModal() {
       document.getElementById("adminModal").style.display = "block";
       document.getElementById("adminLoginSection").style.display = "block";
@@ -910,7 +904,7 @@
 
     function checkAdmin() {
       let pass = document.getElementById("adminPass").value;
-      if(pass === "1905") {
+      if (pass === "1905") {
         document.getElementById("adminLoginSection").style.display = "none";
         document.getElementById("adminSettings").style.display = "block";
         loadAdminSettings();
@@ -966,13 +960,13 @@
       parameters.almgKgPriceFactor = parseFloat(document.getElementById("admin_almgKgPriceFactor").value) || parameters.almgKgPriceFactor;
       for (let type in parameters.kesimFactors) {
         let inputVal = parseFloat(document.getElementById("admin_kesim_" + type.replace(/\s/g, "_")).value);
-        if(!isNaN(inputVal)) {
+        if (!isNaN(inputVal)) {
           parameters.kesimFactors[type] = inputVal;
         }
       }
       for (let material in parameters.materialPrices) {
         let inputVal = parseFloat(document.getElementById("admin_material_" + material.replace(/\s/g, "_")).value);
-        if(!isNaN(inputVal)) {
+        if (!isNaN(inputVal)) {
           parameters.materialPrices[material] = inputVal;
         }
       }
@@ -983,19 +977,18 @@
       setTimeout(() => { savedMsg.style.display = "none"; }, 2000);
     }
 
-    // Tema Toggle Fonksiyonu
     function updateThemeIcon() {
       const btn = document.querySelector(".theme-toggle-btn");
-      if(document.body.classList.contains("dark-theme")){
-         btn.innerHTML = "☀️";
+      if (document.body.classList.contains("dark-theme")) {
+        btn.innerHTML = "☀️";
       } else {
-         btn.innerHTML = "🌙";
+        btn.innerHTML = "🌙";
       }
     }
 
     function toggleTheme() {
       document.body.classList.toggle("dark-theme");
-      if(document.body.classList.contains("dark-theme")){
+      if (document.body.classList.contains("dark-theme")) {
         localStorage.setItem("theme", "dark");
       } else {
         localStorage.setItem("theme", "light");
@@ -1003,12 +996,11 @@
       updateThemeIcon();
     }
 
-    // Sayfa yüklendiğinde
     window.onload = function() {
       loadParameters();
       updateSelectOptions();
       const savedTheme = localStorage.getItem("theme");
-      if(savedTheme === "dark") {
+      if (savedTheme === "dark") {
         document.body.classList.add("dark-theme");
       }
       updateThemeIcon();
