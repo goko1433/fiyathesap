@@ -4,17 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Otomatik Fiyat Hesaplama & Admin Panel</title>
+  <!-- PWA Manifest ve Mobil Ayarlar -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <style>
-    /* Genel Stil */
+    /* GENEL STİL */
     body {
       margin: 0;
       padding: 0;
-      background: #f0f2f5;
+      background: #f8f9fa; /* Daha açık kurumsal arka plan */
       font-family: Arial, sans-serif;
-      color: #333;
+      color: #343a40; /* Kurumsal metin rengi */
       transition: background 0.3s, color 0.3s;
     }
-    /* Koyu Tema Stil - Okunabilirlik için optimize edildi */
+    /* Koyu Tema Stil */
     body.dark-theme {
       background: #121212;
       color: #e0e0e0;
@@ -49,25 +53,25 @@
     body.dark-theme th {
       background: #1e1e1e;
     }
-    /* Sadece dark-theme aktifken label'ları yeşil ve kalın yapalım */
+    /* Dark Theme'de label'ların rengini koyu mavi (#00008B) yapalım */
     body.dark-theme label {
-      color: #0f0;
+      color: #00008B;
       font-weight: bold;
     }
-    /* Gece modunda Admin Panel Modal arka planını gri yap */
+    /* Dark Theme'de Admin Panel Modal arka planı */
     body.dark-theme #adminContent {
       background: #2c2c2c;
       color: #e0e0e0;
     }
 
-    /* Üst Header */
+    /* ÜST HEADER */
     .main-header {
-      background: #e1e8ed;
+      background: #ffffff;
       padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #ccc;
+      border-bottom: 1px solid #dee2e6;
       flex-wrap: wrap;
     }
     .header-buttons {
@@ -78,7 +82,7 @@
       width: 100%;
     }
     .header-buttons button {
-      background: #4a90e2;
+      background: #007bff;
       border: none;
       padding: 10px 15px;
       color: #fff;
@@ -87,18 +91,18 @@
       cursor: pointer;
     }
     .header-buttons button:hover {
-      background: #407ec9;
+      background: #0056b3;
     }
-    /* Admin Panel Butonu: yazı tamamen yeşil */
+    /* Admin Panel Butonu */
     .admin-panel-btn {
-      background: #4CAF50;
-      color: green !important;
+      background: #28a745;
+      color: #fff !important;
     }
     .admin-panel-btn:hover {
-      background: #43a047;
+      background: #218838;
     }
     
-    /* Yuvarlak Tema Toggle Butonu */
+    /* Tema Toggle Butonu (yuvarlak) */
     .theme-toggle-btn {
       width: 40px;
       height: 40px;
@@ -111,26 +115,18 @@
       align-items: center;
       justify-content: center;
     }
-    
-    /* Üst kısımda kayan uyarı metni */
+
+    /* Scrolling Container: Kayan yazı kaldırıldı, sadece tema butonu kalacak */
     .scrolling-container {
       display: flex;
       align-items: center;
       gap: 10px;
       width: 100%;
       margin-top: 10px;
+      justify-content: center;
     }
-    /* Marquee: daha yavaş kaysın, rengi kırmızı */
-    .scrolling-container marquee {
-      font-size: 14px;
-      color: red;
-      background: transparent;
-      border: none;
-      width: 100%;
-      scrollamount: 2;
-    }
-    
-    /* Merkezi Bildirim Stili */
+
+    /* MERKEZİ BİLDİRİM STİLİ */
     #centerNotification {
       position: fixed;
       top: 50%;
@@ -146,7 +142,7 @@
       text-align: center;
     }
     
-    /* Ana Konteyner: Solda Lazer, Sağda Malzeme */
+    /* ANA KONTEYNER: SOLDa LAZER, SAĞda MALZEME */
     .container {
       display: flex;
       max-width: 1600px;
@@ -158,43 +154,43 @@
       flex: 1;
       background: #fff;
       padding: 20px;
-      border: 1px solid #ccc;
+      border: 1px solid #dee2e6;
       border-radius: 6px;
       position: relative;
     }
     h2 {
-      font-size: 28px;
-      color: #4a90e2;
-      border-bottom: 2px solid #4a90e2;
+      font-size: 26px;
+      color: #343a40;
+      border-bottom: 2px solid #dee2e6;
       padding-bottom: 8px;
       margin-bottom: 20px;
     }
     h3 {
-      font-size: 22px;
-      color: #4a90e2;
+      font-size: 20px;
+      color: #343a40;
       margin-bottom: 10px;
     }
     label {
       display: block;
       margin-top: 15px;
-      font-size: 16px;
-      color: #333;
+      font-size: 15px;
+      color: #343a40;
     }
     input, select {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid #ced4da;
       border-radius: 4px;
-      font-size: 16px;
+      font-size: 14px;
       background: #fff;
-      color: #333;
+      color: #343a40;
     }
     button {
       margin-top: 20px;
       padding: 10px;
       width: 100%;
-      background: #4a90e2;
+      background: #007bff;
       border: none;
       color: #fff;
       font-size: 16px;
@@ -202,17 +198,18 @@
       cursor: pointer;
     }
     button:hover {
-      background: #407ec9;
+      background: #0056b3;
     }
     .result {
       margin-top: 20px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       text-align: center;
+      color: #343a40;
     }
     .green {
-      color: #4CAF50;
-      font-size: 20px;
+      color: #28a745;
+      font-size: 18px;
       animation: blink 1s linear infinite;
     }
     @keyframes blink {
@@ -222,7 +219,7 @@
     }
     .comment {
       color: #666;
-      font-size: 16px;
+      font-size: 14px;
       text-align: center;
       margin-top: 10px;
     }
@@ -234,20 +231,20 @@
       background: #fff;
       padding: 15px;
       margin-bottom: 15px;
-      border: 1px solid #ccc;
+      border: 1px solid #dee2e6;
       border-radius: 6px;
       display: none;
     }
     /* Dual Malzeme Alanı */
     .dual-material {
-      border: 1px dashed #ccc;
+      border: 1px dashed #ced4da;
       padding: 10px;
       margin-top: 10px;
       border-radius: 4px;
     }
     /* Dual Lazer Alanı */
     .dual-laser {
-      border: 1px dashed #ccc;
+      border: 1px dashed #ced4da;
       padding: 10px;
       margin-top: 10px;
       border-radius: 4px;
@@ -256,11 +253,11 @@
     /* Yeni Ortalama Fiyat Önerisi Alanı */
     #ortalamaOneri {
       margin-top: 10px;
-      font-size: 18px;
-      color: #333;
+      font-size: 16px;
+      color: #343a40;
       text-align: center;
     }
-    /* Admin Modal */
+    /* ADMIN MODAL */
     #adminModal {
       display: none;
       position: fixed;
@@ -273,7 +270,7 @@
     }
     #adminContent {
       background: #fff;
-      color: #333;
+      color: #343a40;
       width: 90%;
       max-width: 800px;
       margin: 60px auto;
@@ -284,7 +281,7 @@
       overflow-y: auto;
     }
     #adminContent h2, #adminContent h3 {
-      color: #4a90e2;
+      color: #343a40;
     }
     .admin-section {
       margin-bottom: 20px;
@@ -295,7 +292,7 @@
       margin-top: 10px;
     }
     table, th, td {
-      border: 1px solid #ccc;
+      border: 1px solid #dee2e6;
     }
     th, td {
       padding: 8px;
@@ -330,7 +327,7 @@
       margin-top: 10px;
     }
     
-    /* Mobil Uyumluluk: Solda lazer, sağda malzeme, sarmasın => yan yana */
+    /* MOBİL UYUMLULUK: Solda lazer, sağda malzeme, yan yana kaydırılabilir */
     @media (max-width: 768px) {
       body {
         font-size: 14px;
@@ -342,12 +339,11 @@
       select,
       button,
       .comment,
-      .result,
-      .scrolling-container marquee {
+      .result {
         font-size: 14px;
       }
       h2 {
-        font-size: 22px;
+        font-size: 20px;
       }
       h3 {
         font-size: 18px;
@@ -363,7 +359,7 @@
       }
     }
     
-    /* Fiyat Ayarlama Butonları en altta kalsın */
+    /* FİYAT AYARLAMA BUTONLARI (EN ALTA) */
     #priceAdjustmentContainer {
       text-align: center;
       margin: 20px auto;
@@ -374,29 +370,36 @@
       margin: 5px;
       padding: 10px 20px;
     }
+    
+    /* 
+      TODO: 
+      - Uluslararasılaştırma (i18n) için dil dosyaları ve dil seçici eklenebilir.
+      - Kullanıcı Kaydı & Oturum Açma entegrasyonu (örneğin Firebase Auth) eklenebilir.
+      - Gelişmiş erişilebilirlik (ARIA etiketleri, klavye navigasyonu) iyileştirilebilir.
+      - Performans optimizasyonları, lazy-loading ve kod bölme uygulanabilir.
+      - Kullanıcı davranış analizi ve hata raporlama entegrasyonu eklenebilir.
+    */
   </style>
 </head>
 <body>
-  <!-- Üst Header -->
+  <!-- ÜST HEADER -->
   <header class="main-header">
     <div class="header-buttons">
       <button onclick="window.open('https://www.tcmb.gov.tr/kurlar/kurlar_tr.html','_blank')">TCMB Kurlar</button>
       <button class="admin-panel-btn" onclick="openAdminModal()">Admin Panel</button>
     </div>
+    <!-- Kayan yazı kaldırıldı; sadece tema düğmesi kalacak -->
     <div class="scrolling-container">
       <button class="theme-toggle-btn" onclick="toggleTheme()"></button>
-      <marquee behavior="scroll" direction="left" scrollamount="2">
-        Çıkan fiyati işin durumuna, yerleşime, malzemenin değerine göre yorumlayıp kontrol edelim diye uyarı olsun
-      </marquee>
     </div>
   </header>
   
-  <!-- Merkezi Bildirim -->
+  <!-- MERKEZİ BİLDİRİM -->
   <div id="centerNotification"></div>
   
-  <!-- Ana Konteyner -->
+  <!-- ANA KONTEYNER -->
   <div class="container">
-    <!-- Sol Panel: Lazer Kesim Hesaplama -->
+    <!-- SOL PANEL: LAZER KESİM HESAPLAMA -->
     <div class="left">
       <h2>Lazer Kesim Hesaplama</h2>
       
@@ -439,12 +442,11 @@
         <option value="1.5">%50</option>
       </select>
       
+      <!-- Para Birimi Sadece USD -->
       <div class="currency-container">
         <label for="currencySelect">Para Birimi:</label>
         <select id="currencySelect">
           <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-          <option value="TRY">TRY</option>
         </select>
       </div>
       
@@ -457,7 +459,7 @@
       <div class="comment" id="yorum"></div>
     </div>
     
-    <!-- Sağ Panel: Malzeme Fiyat Hesaplama -->
+    <!-- SAĞ PANEL: MALZEME FİYAT HESAPLAMA -->
     <div class="right">
       <h2>Malzeme Fiyat Hesaplama</h2>
       <button id="showNextMaterialBtn" onclick="showNextMaterialSection()">Bir sonraki malzeme bölümünü göster</button>
@@ -548,7 +550,7 @@
     </div>
   </div>
   
-  <!-- Admin Modal -->
+  <!-- ADMIN MODAL -->
   <div id="adminModal">
     <div id="adminContent">
       <div id="adminLoginSection">
@@ -600,7 +602,7 @@
     </div>
   </div>
   
-  <!-- Fiyat Ayarlama Butonları (En Altta Kalır) -->
+  <!-- FİYAT AYARLAMA BUTONLARI (EN ALTA) -->
   <div id="priceAdjustmentContainer">
     <button onclick="adjustPrice('lazer5')">Lazer Kesim %5 Arttır</button>
     <button onclick="adjustPrice('lazer10')">Lazer Kesim %10 Arttır</button>
@@ -608,7 +610,7 @@
   </div>
   
   <script>
-    // Merkezi Bildirim Fonksiyonu (Süre 4000 ms)
+    // MERKEZİ BİLDİRİM FONKSİYONU (Süre 4000 ms)
     function showCenterNotification(message) {
       var notif = document.getElementById("centerNotification");
       notif.innerHTML = message;
@@ -618,19 +620,15 @@
       }, 4000);
     }
   
-    // Çoklu para birimi desteği
+    // Sadece USD kullanılacak, diğer para birimleri çıkarıldı
     const currencyRates = {
-      'USD': 1,
-      'EUR': 0.9,
-      'TRY': 20
+      'USD': 1
     };
     const currencySymbols = {
-      'USD': '$',
-      'EUR': '€',
-      'TRY': '₺'
+      'USD': '$'
     };
 
-    // Varsayılan parametreler
+    // VARSAYILAN PARAMETRELER (Yeni malzeme DKP eklendi)
     const defaultParameters = {
       kgPriceFactor: 0.36,
       almgKgPriceFactor: 0.30,
@@ -658,7 +656,8 @@
         'Hardox': 4.25,
         'Galvaniz': 1.25,
         'Pirinç': 14.50,
-        'Bakır': 16.00
+        'Bakır': 16.00,
+        'DKP': 1.30  // Yeni eklendi
       }
     };
 
@@ -712,7 +711,7 @@
       updateMaterialSelect("malzeme_türü3_dual");
     }
 
-    // Lazer Kesim Hesaplama Fonksiyonu
+    // LAZER KESİM HESAPLAMA FONKSİYONU
     function hesapla() {
       let kg = parseFloat(document.getElementById("kg").value) || 0;
       let süre = parseFloat(document.getElementById("süre").value) || 0;
@@ -760,7 +759,7 @@
       showCenterNotification(commentary);
     }
 
-    // Toplam Fiyat Hesaplaması (Malzeme Dahil kısmı)
+    // TOPLAM FİYAT HESAPLAMASI (MALZEME DAHİL)
     function updateOverallTotal() {
       let totalMaterials = materialTotals[1] + materialTotals[2] + materialTotals[3];
       let overall = basePrice + totalMaterials;
@@ -777,7 +776,7 @@
       document.getElementById("toplamFiyat").innerHTML = resultText;
     }
 
-    // Malzeme Hesaplama (Dual Mantık Dahil)
+    // MALZEME HESAPLAMA (DUAL MANTIK DAHİL)
     function malzemeHesapla(index) {
       let kg = parseFloat(document.getElementById("malzeme_kg" + index).value) || 0;
       let enteredPrice = parseFloat(document.getElementById("malzeme_fiyat" + index).value);
@@ -1005,6 +1004,19 @@
       }
       updateThemeIcon();
       document.getElementById("currencySelect").addEventListener("change", updateOverallTotal);
+    };
+
+    // PWA: Service Worker Kaydı
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js')
+        .then(function(registration) {
+          console.log('Service Worker başarıyla kayıt edildi:', registration.scope);
+        })
+        .catch(function(error) {
+          console.log('Service Worker kayıt hatası:', error);
+        });
+      });
     }
   </script>
 </body>
